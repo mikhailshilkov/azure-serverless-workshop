@@ -15,18 +15,6 @@ const droneStatusStorageAccount = new azure.storage.Account(`${appName}sa`, {
     ...storageAccountType,
 });
 
-const frontEndStorageAccount = new azure.storage.Account(`${appName}fe`, {
-    resourceGroupName: resourceGroupName,
-    tags: {
-        displayName: "Drone Front End Storage Account",
-    },    
-    ...storageAccountType,
-    staticWebsite: {
-        indexDocument: "index.html",
-        error404Document: "404.html",
-    },
-});
-
 const droneStatusAppInsights = new azure.appinsights.Insights(`${appName}-ai`, {
     resourceGroupName: resourceGroupName,
     applicationType: "web",
@@ -72,4 +60,7 @@ const droneStatusFunctionApp = new azure.appservice.FunctionApp(`${appName}-app`
     version: "~3",
 });
 
+export const id = droneStatusFunctionApp.id;
+export const appUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostname}/api`;
+export const key = droneStatusFunctionApp.getFunctionKeys("GetStatusFunction").default;
 export const functionUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostname}/api/GetStatusFunction?deviceId=`;
