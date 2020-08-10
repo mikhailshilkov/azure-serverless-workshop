@@ -112,6 +112,7 @@ const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
         <cors allow-credentials="true">
             <allowed-origins>
                 <origin>${website.url}</origin>
+                <origin>${website.cdnUrl}</origin>
             </allowed-origins>
             <allowed-methods><method>GET</method></allowed-methods>
             <allowed-headers><header>*</header></allowed-headers>

@@ -3,4 +3,4 @@ import "./functionApp";
 import * as website from "./website";
 import "./websiteFiles";
 
-export const siteUrl = website.url;
+export const siteUrl = website.cdnUrl;

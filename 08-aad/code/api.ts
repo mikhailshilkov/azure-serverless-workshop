@@ -112,10 +112,15 @@ const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
         <cors allow-credentials="true">
             <allowed-origins>
                 <origin>${website.url}</origin>
+                <origin>${website.cdnUrl}</origin>
             </allowed-origins>
             <allowed-methods><method>GET</method></allowed-methods>
             <allowed-headers><header>*</header></allowed-headers>
         </cors>
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+            <openid-config url="https://login.microsoftonline.com/${website.tenantId}/.well-known/openid-configuration" />
+            <required-claims><claim name="aud"><value>${website.applicationId}</value></claim></required-claims>
+        </validate-jwt>
         <rewrite-uri template="GetStatusFunction?deviceId={deviceid}" />
         <set-backend-service id="apim-generated-policy" backend-id="${backend.name}" />
     </inbound>
