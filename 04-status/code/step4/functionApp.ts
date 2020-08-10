@@ -2,29 +2,13 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import { appName, resourceGroupName } from "./common";
 
-const storageAccountType = {
-    accountTier: "Standard",
-    accountReplicationType: "LRS",
-};
-
 const droneStatusStorageAccount = new azure.storage.Account(`${appName}sa`, {
     resourceGroupName: resourceGroupName,
     tags: {
         displayName: "Drone Status Function App",
     },    
-    ...storageAccountType,
-});
-
-const frontEndStorageAccount = new azure.storage.Account(`${appName}fe`, {
-    resourceGroupName: resourceGroupName,
-    tags: {
-        displayName: "Drone Front End Storage Account",
-    },    
-    ...storageAccountType,
-    staticWebsite: {
-        indexDocument: "index.html",
-        error404Document: "404.html",
-    },
+    accountTier: "Standard",
+    accountReplicationType: "LRS",
 });
 
 const droneStatusAppInsights = new azure.appinsights.Insights(`${appName}-ai`, {

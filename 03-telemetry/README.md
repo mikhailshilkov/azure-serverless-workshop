@@ -2,7 +2,7 @@
 
 In this lab, you will deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed, and Azure Application Insights for monitoring.
 
-Create a new Pulumi project called `telemetry`:
+Create a new Pulumi project called `telemetry` from your root workshop folder:
 
 ```bash
 mkdir telemetry
@@ -114,10 +114,17 @@ export const endpoint = databaseAccount.endpoint;
 export const masterKey = databaseAccount.primaryMasterKey;
 ```
 
-Also, add a new import to the `index.ts` file:
+Also, add a new import to the `index.ts` file. Also, export Cosmos DB credentials: you will use them in the following labs.
 
 ```ts
-import "./cosmos";
+import * as cosmos from "./cosmos";
+
+export const cosmosDatabaseName = cosmos.databaseName;
+export const cosmosCollectionName = cosmos.collectionName;
+export const cosmosConnectionString = cosmos.connectionString;
+export const cosmosEndpoint = cosmos.endpoint;
+export const cosmosMasterKey = cosmos.masterKey;
+
 ```
 
 > :white_check_mark: After these changes, your files should [look like this](./code/step2).
@@ -322,7 +329,7 @@ const droneTelemetryFunctionApp = new azure.appservice.FunctionApp(`${appName}-a
 
 The application uses a pre-built deployment package. If you have time, feel free to download the package to your computer and read or modify the code, as we learned in lab 2.
 
-Add anothe import to `index.ts`:
+Add another import to `index.ts`:
 
 ```ts
 import "./functionApp";
@@ -389,10 +396,12 @@ Go ahead and explore Event Hubs, Application Insights, Cosmos DB in the Azure Po
 
 - A spike of incoming and outgoing messages in Event Hubs
 - A spike of log messages and function calls in Application Insights
-- Multiple documents in the `items` collection in Cosmos DB.
+- Multiple documents in the `items` collection in Cosmos DB. Note an ID of a devide there (e.g., "drone-543").
 
 ## Next Steps
 
 Congratulations! :tada: You have successfully provisioned a data processing pipeline using managed Azure services for messaging, database, and compute.
+
+Note: do not destroy the stack, the later labs will interact with it.
 
 Next, TODO
