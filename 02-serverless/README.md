@@ -191,7 +191,7 @@ Change the `appSettings` of the `FunctionApp` to point to the new blob:
         WEBSITE_RUN_FROM_PACKAGE: codeBlobUrl,
 ```
 
-> :white_check_mark: After these changes, your `index.ts` should [look like this](./code/step6.cs).
+> :white_check_mark: After these changes, your `index.ts` should [look like this](./code/step6.ts).
 
 ## Step 7 &mdash; Redeploy to Run the Custom Code
 

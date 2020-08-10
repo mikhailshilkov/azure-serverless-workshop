@@ -16,7 +16,7 @@ The package will be added to `node_modules/`, `package.json`, and `package-lock.
 
 Now that the Azure package is installed, add the following line to `index.ts` to import it:
 
-```cs
+```ts
 ...
 import * as azure from "@pulumi/azure";
 ```

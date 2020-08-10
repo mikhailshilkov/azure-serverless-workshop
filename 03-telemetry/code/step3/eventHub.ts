@@ -13,6 +13,14 @@ const eventHub = new azure.eventhub.EventHub(`${appName}-eh`, {
     partitionCount: 4,
 }, { parent: eventHubNamespace });
 
+export const consumerGroupName = "dronetelemetry";
+const consumerGroup = new azure.eventhub.ConsumerGroup(consumerGroupName, {
+    name: consumerGroupName,
+    resourceGroupName: resourceGroupName,
+    namespaceName: eventHubNamespace.name,
+    eventhubName: eventHub.name,
+}, { parent: eventHub });
+
 const sendEventSourceKey = new azure.eventhub.AuthorizationRule("send", {
     resourceGroupName: resourceGroupName,
     namespaceName: eventHubNamespace.name,
@@ -25,14 +33,6 @@ const listenEventSourceKey = new azure.eventhub.AuthorizationRule("listen", {
     namespaceName: eventHubNamespace.name,
     eventhubName: eventHub.name,
     listen: true,
-}, { parent: eventHub });
-
-export const consumerGroupName = "dronetelemetry";
-const consumerGroup = new azure.eventhub.ConsumerGroup(consumerGroupName, {
-    name: consumerGroupName,
-    resourceGroupName: resourceGroupName,
-    namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
 }, { parent: eventHub });
 
 export const namespace = eventHubNamespace.name;
