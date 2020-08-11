@@ -1,4 +1,4 @@
-# Deploying a Status Function App
+# Deploying a Status Website
 
 In this lab, you will extend the `statusapp` stack to add an HTML frontend application that displays drone status data. You will deploy a static website to a new Storage Account, including the HTML and JavaScipt files.
 
