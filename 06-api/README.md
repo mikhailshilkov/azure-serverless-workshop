@@ -4,7 +4,7 @@ Currently, your frontend website retrieves data directly from a Function App.
 
 In this lab, you will extend the `statusapp` stack to add an API Management service in front of the Azure Function. You will change the website to talk to that API Management service.
 
-Make sure you are still in the `statusapp` folder with the same files that you created in Lab 5.
+Make sure you are still in the `statusapp` folder with the same files that you created in Labs 4-5.
 
 ## Step 1 &mdash; Add Extra Exports to Function App
 

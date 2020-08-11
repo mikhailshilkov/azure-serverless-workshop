@@ -1,12 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import * as website from "./website";
-import * as api from "./api";
 import * as mime from "mime";
 import * as nodedir from "node-dir";
 import * as fs from "fs";
+import * as api from "./api";
 
-const folderName = "public";
+const folderName = "wwwroot-noauth";
 const files = nodedir.files(folderName, { sync: true });
 for (const file of files) {
     const name = file.substring(folderName.length+1);
@@ -26,4 +26,3 @@ for (const file of files) {
         contentType,
     }, { parent: website.storageAccount });
 }
-

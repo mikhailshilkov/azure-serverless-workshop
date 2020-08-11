@@ -15,7 +15,7 @@ export const storageAccount = new azure.storage.Account(`${appName}fe`, {
     },
 });
 
-export const url = storageAccount.primaryWebEndpoint;
+export const storageAccountUrl = storageAccount.primaryWebEndpoint;
 
 const cdnProfile = new azure.cdn.Profile("profile", {
     resourceGroupName: resourceGroupName,
@@ -29,7 +29,5 @@ const cdnEndpoint = new azure.cdn.Endpoint("endpoint", {
     origins: [{ name: "origin", hostName: storageAccount.primaryWebHost }],
     originHostHeader: storageAccount.primaryWebHost,
 });
-
-// Note: provisioning may take time and you'd get 404's until it's ready.
 
 export const cdnUrl = pulumi.interpolate`https://${cdnEndpoint.hostName}`;
