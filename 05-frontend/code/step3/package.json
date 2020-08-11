@@ -1,0 +1,14 @@
+{
+    "name": "statusapp",
+    "devDependencies": {
+        "@types/node": "^10.0.0"
+    },
+    "dependencies": {
+        "@pulumi/azure": "^3.0.0",
+        "@pulumi/pulumi": "^2.0.0",
+        "@types/mime": "^2.0.3",
+        "@types/node-dir": "0.0.33",
+        "mime": "^2.4.6",
+        "node-dir": "^0.1.17"
+    }
+}

@@ -398,6 +398,8 @@ Go ahead and explore Event Hubs, Application Insights, Cosmos DB in the Azure Po
 - A spike of log messages and function calls in Application Insights
 - Multiple documents in the `items` collection in Cosmos DB. Note an ID of a devide there (e.g., "drone-543").
 
+> Some users reported a delay before Azure Functions start processing the messages. If that happens, try restarting the Function App in the portal, or call [Sync triggers](https://docs.microsoft.com/en-us/azure/azure-functions/functions-deployment-technologies#trigger-syncing).
+
 ## Next Steps
 
 Congratulations! :tada: You have successfully provisioned a data processing pipeline using managed Azure services for messaging, database, and compute.

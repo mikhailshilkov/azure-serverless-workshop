@@ -16,7 +16,7 @@ Remove all the code from `index.ts`.
 
 ## Step 1 &mdash; Create a Resource Group
 
-Create a new file called `common.ts` in the same `status` folder where `index.ts` exists. Add the following lines to it:
+Create a new file called `common.ts` in the same `statusapp` folder where `index.ts` exists. Add the following lines to it:
 
 ```ts
 import * as azure from "@pulumi/azure";

@@ -1,19 +1,19 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import * as website from "./website";
-import * as api from "./api";
+import * as functionApp from "./functionApp";
 import * as mime from "mime";
 import * as nodedir from "node-dir";
 import * as fs from "fs";
 
-const folderName = "public";
+const folderName = "wwwroot-noauth";
 const files = nodedir.files(folderName, { sync: true });
 for (const file of files) {
     const name = file.substring(folderName.length+1);
     const contentType = mime.getType(file) || undefined;
 
     const rawText = fs.readFileSync(file, "utf8").toString();
-    const asset = api.apiUrl
+    const asset = functionApp.functionUrl
         .apply(url => rawText.replace("[API_URL]", url))
         .apply(text => new pulumi.asset.StringAsset(text));
 
@@ -26,4 +26,3 @@ for (const file of files) {
         contentType,
     }, { parent: website.storageAccount });
 }
-
