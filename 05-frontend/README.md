@@ -110,7 +110,7 @@ Add an import line to `index.ts`:
 import "./websiteFiles";
 ```
 
-> :white_check_mark: After these changes, your files should [look like this](./code/step1).
+> :white_check_mark: After these changes, your files should [look like this](./code/step4).
 
 ## Step 5 &mdash; Deploy and Test the Stack
 

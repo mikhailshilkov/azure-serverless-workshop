@@ -14,4 +14,4 @@ export const storageAccount = new azure.storage.Account(`${appName}fe`, {
     },
 });
 
-export const url = storageAccount.primaryWebEndpoint;
+export const storageAccountUrl = storageAccount.primaryWebEndpoint;

@@ -2,17 +2,13 @@ import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
 import { appName, resourceGroupName } from "./common";
 
-const storageAccountType = {
-    accountTier: "Standard",
-    accountReplicationType: "LRS",
-};
-
 const droneStatusStorageAccount = new azure.storage.Account(`${appName}sa`, {
     resourceGroupName: resourceGroupName,
     tags: {
         displayName: "Drone Status Function App",
     },    
-    ...storageAccountType,
+    accountTier: "Standard",
+    accountReplicationType: "LRS",
 });
 
 const droneStatusAppInsights = new azure.appinsights.Insights(`${appName}-ai`, {
@@ -26,7 +22,7 @@ const hostingPlan = new azure.appservice.Plan(`${appName}-asp`, {
     sku: { tier: "Dynamic", size: "Y1" },
 });
 
-const telemetry = new pulumi.StackReference("mikhailshilkov/iac-workshop-azure/dev");
+const telemetry = new pulumi.StackReference("mikhailshilkov/telemetry/dev");
 const cosmosDatabaseName = telemetry.requireOutput("cosmosDatabaseName");
 const cosmosCollectionName = telemetry.requireOutput("cosmosCollectionName");
 const cosmosConnectionString = telemetry.requireOutput("cosmosConnectionString");
