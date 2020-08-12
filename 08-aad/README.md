@@ -52,6 +52,8 @@ Download the zip archive from https://mikhailworkshop.blob.core.windows.net/zips
 
 Extract the contents into the folder `droneapp-auth` under the folder `statusapp`. Make sure that the HTML and JavaScript files are located directly inside `statusapp/droneapp-auth` (not in a subfolder below).
 
+The source for this application is available [here](https://github.com/mikhailshilkov/azure-serverveless-workshop/tree/master/website/auth).
+
 Open the file `websiteFiles.ts`. Change the name of the folder there:
 
 ```ts

@@ -49,6 +49,8 @@ Extract the contents into the folder `droneapp-noauth` under the folder `statusa
 
 These files are a React-basd web application built with Webpack. That's why the file names are a bit odd. `noauth` means there's no authentication built-in yet: you will add authentication in Lab 8.
 
+The source for this application is available [here](https://github.com/mikhailshilkov/azure-serverveless-workshop/tree/master/website/noauth).
+
 ## Step 3 &mdash; Install Additional NPM Packages
 
 The next step relies of several NPM packages to be present. Run the following command to install the to the `statusapp`:
