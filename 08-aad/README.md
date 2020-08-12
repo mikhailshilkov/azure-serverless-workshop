@@ -1,6 +1,6 @@
-# Enabling User Authentication
+# Lab 8: Enabling User Authentication
 
-Currently, your frontend website is open to anonymous users. In this lab, you will enable Azure Active Directory OAuth2 authentication in the `statusapp` stack.
+Currently, your frontend website is open to anonymous users. In this lab, you will enable Azure Active Directory OAuth2 authentication in the `statusapp` project.
 
 Make sure you are still in the `statusapp` folder with the same files that you created in Labs 4-7.
 
@@ -113,7 +113,7 @@ Note: if you are using the CDN URL, mind that the old files may be served for a 
 
 Click the "Sign In" button and login with your Azure username and password, then accept the permission request.
 
-Now, the search screen should appear, and you user account is shown in the top-right corner.
+Now, the search screen should appear, and your user account is shown in the top-right corner.
 
 ## Next Steps
 
@@ -122,3 +122,5 @@ Congratulations! :tada: You have successfully setup Azure AD authentication for 
 You have completed the labs! You are awesome! :tada:
 
 After you are done with playing with the application, don't forget to clean up the infrastructure by running `pulumi destroy` in both `statusapp` and `telemetry` projects (in this order).
+
+You will always be able to re-create them, because the infrastructure is defined as code!

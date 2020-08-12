@@ -1,4 +1,4 @@
-# Deploying Serverless Applications with Azure Functions
+# Lab 2: Deploying Serverless Applications with Azure Functions
 
 In this lab, you will deploy a Azure Function Apps with HTTP-triggered serverless functions.
 

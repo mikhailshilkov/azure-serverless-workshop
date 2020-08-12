@@ -1,8 +1,8 @@
-# Deploying Azure API Management
+# Lab 6: Deploying Azure API Management
 
 Currently, your frontend website retrieves data directly from a Function App.
 
-In this lab, you will extend the `statusapp` stack to add an API Management service in front of the Azure Function. You will change the website to talk to that API Management service.
+In this lab, you will extend the `statusapp` project to add an API Management service in front of the Azure Function. You will change the website to talk to that API Management service.
 
 Make sure you are still in the `statusapp` folder with the same files that you created in Labs 4-5.
 
@@ -285,7 +285,7 @@ Resources:
     11 changes. 25 unchanged
 ```
 
-Navigate to the `storageAccountUrl` in a browser, hit refresh, and make sure that the app still works. You may turn on a network tab on browser developer tools and see that the request comes to API Management instead of Function Apps.
+Navigate to the `storageAccountUrl` in a browser, hit refresh, and make sure that the app still works. You may turn on a network tab in browser developer tools and see that the request comes to API Management instead of Function Apps.
 
 ## Next Steps
 

@@ -1,8 +1,8 @@
-# Deploying Website Behind Azure CDN
+# Lab 7: Deploying Website Behind Azure CDN
 
 Currently, your frontend website is served directly from the Storage Account. You can improve the performance of serving static web files for users around the world using a Content Delivery Network (CDN).
 
-In this lab, you will extend the `statusapp` stack to add an Azure CDN service in front of the Storage Account.
+In this lab, you will extend the `statusapp` project to add an Azure CDN service in front of the Storage Account.
 
 Make sure you are still in the `statusapp` folder with the same files that you created in Labs 4-6.
 

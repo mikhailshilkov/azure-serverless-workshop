@@ -1,4 +1,4 @@
-# Deploying a Data Processing pipeline
+# Lab 3: Deploying a Data Processing pipeline
 
 In this lab, you will deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
 
@@ -32,9 +32,9 @@ export const appName = "telemetry";
 const resourceGroup = new azure.core.ResourceGroup(`${appName}-rg`);
 ```
 
-You are going to name all resources with a common prefix `telemetry`, so you declare and export a variable `appName`. The third line creates a new resource group `telemetry-rg`.
+You are going to name all resources with a common prefix `telemetry`, so you declare and export a variable `appName` to avoid copy-pasting. The third line creates a new resource group `telemetry-rg`.
 
-Now, you need to export two more pieces of shared metadata: a resource group name for all other resources in this stack, and the location that they should use. Add these two lines to the `common.ts` file:
+Now, you need to export two more pieces of shared metadata: a resource group name for all other resources in this stack and the location that they should use. Add these two lines to the `common.ts` file:
 
 ```ts
 export const resourceGroupName = resourceGroup.name;
@@ -53,7 +53,7 @@ import "./common";
 
 Next, you define a NoSQL database to store the telemetry data. Azure Cosmos DB suits perfectly for our use case.
 
-Create a new file `cosmos.ts`. Use the following import statements to load Pulumi and the common variables that we defined on step 1:
+Create a new file `cosmos.ts`. Use the following import statements to load Pulumi and the common variables that we defined in step 1:
 
 ```ts
 import * as azure from "@pulumi/azure";
@@ -88,7 +88,7 @@ const database = new azure.cosmosdb.SqlDatabase(databaseName, {
 
 Note two things about this definition:
 
-- You set an explicit value for the `name` property. This turns off autonaming by Pulumi, so that the actual name of the Azure resource is `db`.
+- You set an explicit value for the `name` property. This turns off autonaming by Pulumi so that the actual name of the Azure resource is `db`.
 - You set the `parent` option to the `databaseAccount` resource. This is not required, but this option gives a hint to Pulumi preview to display the `db` resource under the `telemetry-acc` resource.
 
 Finally, add a SQL collection to the database:
@@ -129,7 +129,7 @@ export const cosmosMasterKey = cosmos.masterKey;
 
 > :white_check_mark: After these changes, your files should [look like this](./code/step2).
 
-Node: it takes 10-15 minutes to provision a new Cosmos DB account. Go ahead and deploy your `telemetry` program now with `pulumi up`:
+Note: it takes 10-15 minutes to provision a new Cosmos DB account. Go ahead and deploy your `telemetry` program now with `pulumi up`:
 
 ```
 $ pulumi up
@@ -237,7 +237,7 @@ You will use these outputs to send sample data to the Event Hub.
 
 ## Step 4 &mdash; Add a Function App
 
-Next, you'll create an Azure Function App. This time, the Function will be triggered by messages, not HTTP requests. It glues together all the services we defined so far.
+Next, you'll create an Azure Function App. This time, the Function will be triggered by events (messages), not HTTP requests. It glues together all the services we defined so far.
 
 Create a new file `functionApp.ts` and add these import lines:
 
@@ -339,7 +339,7 @@ import "./functionApp";
 
 ## Step 5 &mdash; Deploy and Send Data
 
-Re-deplooy your `telemetry` application with `pulumi up`:
+Re-deploy your `telemetry` application with `pulumi up`:
 
 ```
 $ pulumi up
@@ -396,7 +396,7 @@ Go ahead and explore Event Hubs, Application Insights, Cosmos DB in the Azure Po
 
 - A spike of incoming and outgoing messages in Event Hubs
 - A spike of log messages and function calls in Application Insights
-- Multiple documents in the `items` collection in Cosmos DB. Note an ID of a devide there (e.g., "drone-543").
+- Multiple documents in the `items` collection in Cosmos DB. Note an ID of a device there (e.g., "drone-543").
 
 > Some users reported a delay before Azure Functions start processing the messages. If that happens, try restarting the Function App in the portal, or call [Sync triggers](https://docs.microsoft.com/en-us/azure/azure-functions/functions-deployment-technologies#trigger-syncing).
 
@@ -406,6 +406,6 @@ Congratulations! :tada: You have successfully provisioned a data processing pipe
 
 Note: do not destroy the stack, the later labs will interact with it.
 
-Next, you will deploy a Azure Function Apps that retrieves data from the Cosmos DB collection.
+Next, you will deploy an Azure Function App that retrieves data from the Cosmos DB collection.
 
 [Get Started with Lab 4](../04-status/README.md)

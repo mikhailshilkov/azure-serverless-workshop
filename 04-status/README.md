@@ -1,6 +1,6 @@
-# Deploying a Status Function App
+# Lab 4: Deploying a Status Function App
 
-In this lab, you will deploy a Azure Function Apps that retrieves data from the Cosmos DB collection. That's the first step to building a web application that shows drone data to end users.
+In this lab, you will deploy an Azure Function App that retrieves data from the Cosmos DB collection. That's the first step to building a web application that shows drone data to end users.
 
 Create a new Pulumi project called `statusapp` from your root workshop folder (next to `telemetry`):
 
