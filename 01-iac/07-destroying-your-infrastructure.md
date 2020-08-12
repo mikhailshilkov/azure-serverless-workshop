@@ -99,6 +99,8 @@ pulumi stack ls
 
 Congratulations! :tada: You have completed the first lab.
 
-Now that you're more familiar with infrastructure as code concepts, and how the tool works, you can feel free to explore the more advanced collection of labs. These labs will teach you how to provision serverless workloads. 
+Now that you're more familiar with infrastructure as code concepts and how the tool works, you can feel free to explore the more advanced collection of labs. These labs will teach you how to provision serverless workloads.
 
-* [Deploying Serverless Applications with Azure Functions](../02-serverless/README.md)
+Lab 2 deploys an Azure Function App with HTTP-triggered serverless functions.
+
+[Get Started with Lab 2](../02-serverless/README.md)

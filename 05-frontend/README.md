@@ -146,4 +146,6 @@ If needed, replace `drone-543` with a name of drone as seen in lab 3.
 
 Congratulations! :tada: You have successfully provisioned a static website and linked it to the Azure Function backend connected to Azure Cosmos DB.
 
-Next, TODO
+Next, you will deploy an API Management service in front of the Azure Function.
+
+[Get Started with Lab 6](../06-api/README.md)

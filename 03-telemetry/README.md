@@ -406,4 +406,6 @@ Congratulations! :tada: You have successfully provisioned a data processing pipe
 
 Note: do not destroy the stack, the later labs will interact with it.
 
-Next, TODO
+Next, you will deploy a Azure Function Apps that retrieves data from the Cosmos DB collection.
+
+[Get Started with Lab 4](../04-status/README.md)

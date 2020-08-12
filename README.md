@@ -1,6 +1,6 @@
 ## Azure Serverless Workshop with Pulumi
 
-The hands-on workshop will walk you through various tasks of managing Azure infrastructure with the focus on serverless compute and managed Azure services. All the resources are provisioned with [Pulumi](https://pulumi.com) and infrastructure-as-code.
+This hands-on workshop will walk you through various tasks of managing Azure infrastructure with the focus on serverless compute and managed Azure services. All the resources are provisioned with [Pulumi](https://pulumi.com) in the infrastructure-as-code fashion.
 
 You will be building an end-to-end Drone Delivery application that is based on two [reference architectures](https://github.com/mspnp/serverless-reference-implementation) defined by Microsoft.
 
@@ -12,7 +12,7 @@ The project consists of two parts: a web front-end and a data processing pipelin
 
 ![Serverless web application](./img/status.png)
 
-The application serves static content from Azure Blob Storage, and implements an API using Azure Functions. The API reads data from Cosmos DB and returns the results to the web app.
+The application serves static content from Azure Blob Storage and implements an API using Azure Functions. The API reads data from Cosmos DB and returns the results to the web app.
 
 #### Serverless event processing
 
@@ -42,19 +42,19 @@ The first lab takes you on a tour of infrastructure as code concepts:
 
 ### Lab 2 - Deploy Serverless Applications with Azure Functions
 
-In this lab, you deploy a Azure Function Apps with HTTP-triggered serverless functions.
+In this lab, you deploy an Azure Function App with HTTP-triggered serverless functions.
 
 [Get Started with Lab 2](./02-serverless/README.md)
 
 ### Lab 3 - Deploy a Data Processing Pipeline
 
-In this lab, you deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages are saved to Azure Cosmos DB. You setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
+In this lab, you deploy a Azure Function Apps that is triggered by messages in an Event Hub. Device data from the messages are saved to Azure Cosmos DB. You setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
 
 [Get Started with Lab 3](./03-telemetry/README.md)
 
 ### Lab 4 - Deploy a Status Function App
 
-In this lab, you deploy a Azure Function Apps that retrieves data from the Cosmos DB collection. That's the first step to building a web application that shows drone data to end users.
+In this lab, you deploy an Azure Function App that retrieves data from the Cosmos DB collection. That's the first step to building a web application that shows drone data to end users.
 
 [Get Started with Lab 4](./04-status/README.md)
 
@@ -66,7 +66,7 @@ In this lab, you add an HTML frontend application that displays drone status dat
 
 ### Lab 6 - Deploy Azure API Management
 
-In this lab, you add an API Management service in front of the Azure Function. You change the website to talk to that API Management service.
+In this lab, you add an API Management service in front of Azure Functions. You change the website to talk to that API Management service.
 
 [Get Started with Lab 6](./06-api/README.md)
 

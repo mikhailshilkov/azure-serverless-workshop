@@ -84,4 +84,6 @@ Navigate to the `cdnUrl` in a browser and make sure that the app still works. No
 
 Congratulations! :tada: You have successfully provisioned Azure CDN resources that stand in front of Azure Storage to provide users with faster static websites.
 
-Next, TODO
+Next, you will enable Azure Active Directory OAuth2 authentication in the status website.
+
+[Get Started with Lab 8](../08-aad/README.md)

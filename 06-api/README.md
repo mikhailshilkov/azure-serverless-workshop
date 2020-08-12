@@ -291,4 +291,6 @@ Navigate to the `storageAccountUrl` in a browser, hit refresh, and make sure tha
 
 Congratulations! :tada: You have successfully provisioned API Management resources that stand in front of Azure Functions to provide API for a static website.
 
-Next, TODO
+Next, you will add an Azure CDN service in front of the Storage Account.
+
+[Get Started with Lab 7](../07-cdn/README.md)

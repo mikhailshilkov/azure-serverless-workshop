@@ -174,4 +174,6 @@ If needed, replace `drone-543` with a name of drone as seen in lab 3.
 
 Congratulations! :tada: You have successfully provisioned an Azure Function that can retrieve data from Azure Cosmos DB in another stack.
 
-Next, TODO
+Next, you will add an HTML frontend application that displays drone status data.
+
+[Get Started with Lab 5](../05-frontend/README.md)

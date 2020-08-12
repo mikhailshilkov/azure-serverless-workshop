@@ -26,6 +26,8 @@ const storageAccount = new azure.storage.Account("storage", {
 
 It defines a locally-redundant standard Storage Account, and it is a part of the Resource Group that you defined before.
 
+> :white_check_mark: After these changes, your `index.ts` should [look like this](./code/step1.ts).
+
 ## Step 2 &mdash; Define a Consumption Plan
 
 There are several options to deploy Azure Functions. The serverless pay-per-execution hosting plan is called _Consumption Plan_.
@@ -46,6 +48,8 @@ const plan = new azure.appservice.Plan("asp", {
 ```
 
 Note the specific way that the properties `sku` and `kind` are configured. If you ever want to deploy to another type of service plan, you would need to change these values accordingly.
+
+> :white_check_mark: After these changes, your `index.ts` should [look like this](./code/step2.ts).
 
 ## Step 3 &mdash; Create a Function App
 
@@ -83,6 +87,7 @@ Now, if you inspect the type of the `app.defaultHostname`, you will see that it'
 You want to export the full endpoint of your Function App, the following line is NOT CORRECT:
 
 ```ts
+// This compiles but won't work.
 export const endpoint = `https://${app.defaultHostname}/api/hello`;
 ```
 
@@ -250,4 +255,6 @@ pulumi stack rm
 
 Congratulations! :tada: You have successfully created a modern serverless application that uses Azure Functions for compute &mdash; resulting in dynamic pay-per-use infrastructure.
 
-Next, TODO
+Next, you will deploy a data processing pipeline with Azure Functions, Event Hubs, and Cosmos DB.
+
+[Get Started with Lab 3](../03-telemetry/README.md)
