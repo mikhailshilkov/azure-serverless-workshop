@@ -99,3 +99,5 @@ Now, the search screen should appear, and you user account is shown in the top-r
 Congratulations! :tada: You have successfully setup Azure AD authentication for your website.
 
 You have completed the labs! You are awesome! :tada:
+
+After you are done with playing with the application, don't forget to clean up the infrastructure by running `pulumi destroy` in both `statusapp` and `telemetry` projects (in this order).
