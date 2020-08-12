@@ -1,6 +1,6 @@
 # Deploying a Data Processing pipeline
 
-In this lab, you will deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed, and Azure Application Insights for monitoring.
+In this lab, you will deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
 
 Create a new Pulumi project called `telemetry` from your root workshop folder:
 

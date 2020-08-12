@@ -1,4 +1,4 @@
-# Adding User Authentication
+# Enabling User Authentication
 
 Currently, your frontend website is open to anonymous users. In this lab, you will enable Azure Active Directory OAuth2 authentication in the `statusapp` stack.
 
