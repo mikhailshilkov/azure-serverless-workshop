@@ -72,6 +72,22 @@ Also, change the `asset` calculation block to populate the tenant ID, client ID,
         .apply(text => new pulumi.asset.StringAsset(text));
 ```
 
+Now, you should also enforce authentication in the API Management layer. Navigate to `api.ts`, find the `ApiPolicy` resource and insert `validate-jwt` block as below:
+
+```ts
+const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
+...
+        </cors>
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+            <openid-config url="https://login.microsoftonline.com/${website.tenantId}/.well-known/openid-configuration" />
+            <required-claims><claim name="aud"><value>${website.applicationId}</value></claim></required-claims>
+        </validate-jwt>
+        <rewrite-uri template="GetStatusFunction?deviceId={deviceid}" />
+...
+```
+
+> :white_check_mark: After these changes, your files should [look like this](./code/step3).
+
 ## Step 4 &mdash; Deploy and Test the Stack
 
 Deploy the stack
@@ -85,12 +101,15 @@ Resources:
     + 13 created
     - 12 deleted
     +-8 replaced
-    33 changes. 18 unchanged
+    ~ 1 updated
+    34 changes. 17 unchanged
 ```
 
 Navigate to the website in a browser and make sure that you get a login screen like this one:
 
 ![Sign In](./img/auth.png)
+
+Note: if you are using the CDN URL, mind that the old files may be served for a while due to caching.
 
 Click the "Sign In" button and login with your Azure username and password, then accept the permission request.
 
