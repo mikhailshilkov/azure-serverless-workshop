@@ -4,15 +4,7 @@ import { appName, resourceGroupId, resourceGroupName } from "./common";
 import * as functionApp from "./functionApp";
 import * as website from "./website";
 
-const apiManagementName = `${appName}-apim`;
-// const apiManagement = new azure.apimanagement.Service(apiManagementName, {
-//     resourceGroupName: resourceGroupName,
-//     skuName: "Developer_1",
-//     publisherEmail: "drones@contoso.com",
-//     publisherName: "contoso",
-// });
-//const apiManagementId = apiManagement.id;
-
+const apiManagementName = `${appName}-apim1`;
 const arm = `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
@@ -31,6 +23,7 @@ const arm = `{
         }
     }]
 }`;
+
 const template = new azure.core.TemplateDeployment(`${appName}-at`, {
     resourceGroupName: resourceGroupName,
     templateBody: arm,
@@ -44,7 +37,7 @@ const versionSet = new azure.apimanagement.ApiVersionSet("dronestatusversionset"
     name: "dronestatusversionset",
     displayName: "Drone Delivery API",
     versioningScheme: "Segment",
-});
+}, { dependsOn: template });
 
 const api = new azure.apimanagement.Api("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,
@@ -85,7 +78,7 @@ const apiValueFunctionCode = new azure.apimanagement.NamedValue("getstatusfuncti
     tags: ["key", "function", "code"],
     secret: true,
     value: functionApp.key,
-});
+}, { dependsOn: template });
 
 const backend = new azure.apimanagement.Backend("dronestatusdotnet", {
     name: "dronestatusdotnet",
@@ -111,16 +104,12 @@ const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
         <base />
         <cors allow-credentials="true">
             <allowed-origins>
-                <origin>${website.url}</origin>
+                <origin>${website.storageAccountUrl}</origin>
                 <origin>${website.cdnUrl}</origin>
             </allowed-origins>
             <allowed-methods><method>GET</method></allowed-methods>
             <allowed-headers><header>*</header></allowed-headers>
         </cors>
-        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
-            <openid-config url="https://login.microsoftonline.com/${website.tenantId}/.well-known/openid-configuration" />
-            <required-claims><claim name="aud"><value>${website.applicationId}</value></claim></required-claims>
-        </validate-jwt>
         <rewrite-uri template="GetStatusFunction?deviceId={deviceid}" />
         <set-backend-service id="apim-generated-policy" backend-id="${backend.name}" />
     </inbound>
@@ -145,7 +134,7 @@ const product = new azure.apimanagement.Product("dronedeliveryprodapi", {
     terms: "terms for example product",
     subscriptionRequired: false,
     published: true,
-});
+}, { dependsOn: template });
 
 const productApi = new azure.apimanagement.ProductApi("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,

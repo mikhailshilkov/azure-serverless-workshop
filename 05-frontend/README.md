@@ -45,7 +45,7 @@ export const storageAccountUrl = website.storageAccountUrl;
 
 Download the zip archive from https://mikhailworkshop.blob.core.windows.net/zips/droneapp-noauth.zip.
 
-Extract the contents into the folder `wwwroot-noauth` under the folder `statusapp`. Make sure that the HTML and JavaScript files are located directly inside `statusapp/wwwroot-noauth` (not in a subfolder below).
+Extract the contents into the folder `droneapp-noauth` under the folder `statusapp`. Make sure that the HTML and JavaScript files are located directly inside `statusapp/droneapp-noauth` (not in a subfolder below).
 
 These files are a React-basd web application built with Webpack. That's why the file names are a bit odd. `noauth` means there's no authentication built-in yet: you will add authentication in Lab 8.
 
@@ -72,7 +72,7 @@ import * as mime from "mime";
 import * as nodedir from "node-dir";
 import * as fs from "fs";
 
-const folderName = "wwwroot-noauth";
+const folderName = "droneapp-noauth";
 const files = nodedir.files(folderName, { sync: true });
 for (const file of files) {
     const name = file.substring(folderName.length+1);
@@ -96,7 +96,7 @@ for (const file of files) {
 
 Here is what happens in this snippet:
 
-1. You list the files inside the `wwwroot-noauth` folder and iterate through them with a `for` loop.
+1. You list the files inside the `droneapp-noauth` folder and iterate through them with a `for` loop.
 2. You extract the file `name` from the path.
 3. You determine the `contentType` of the file.
 4. You load the file contents to `rawText`.

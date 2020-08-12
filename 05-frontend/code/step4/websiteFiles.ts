@@ -6,7 +6,7 @@ import * as mime from "mime";
 import * as nodedir from "node-dir";
 import * as fs from "fs";
 
-const folderName = "wwwroot-noauth";
+const folderName = "droneapp-noauth";
 const files = nodedir.files(folderName, { sync: true });
 for (const file of files) {
     const name = file.substring(folderName.length+1);

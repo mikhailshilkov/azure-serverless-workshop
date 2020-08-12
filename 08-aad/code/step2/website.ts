@@ -16,7 +16,7 @@ export const storageAccount = new azure.storage.Account(`${appName}fe`, {
     },
 });
 
-export const url = storageAccount.primaryWebEndpoint;
+export const storageAccountUrl = storageAccount.primaryWebEndpoint;
 
 const cdnProfile = new azure.cdn.Profile("profile", {
     resourceGroupName: resourceGroupName,
@@ -31,19 +31,15 @@ const cdnEndpoint = new azure.cdn.Endpoint("endpoint", {
     originHostHeader: storageAccount.primaryWebHost,
 });
 
-// Note: provisioning may take time and you'd get 404's until it's ready.
-
 export const cdnUrl = pulumi.interpolate`https://${cdnEndpoint.hostName}`;
 
 export const tenantId = pulumi.output(azure.core.getClientConfig()).tenantId;
-const clientUrl = url;
-
 const apiAppName=`${appName}-api`;
 
 const apiApp = new azuread.Application(apiAppName, {
     name: apiAppName,
     oauth2AllowImplicitFlow: true,
-    replyUrls: [storageAccount.primaryWebEndpoint, cdnUrl],
+    replyUrls: [storageAccountUrl, cdnUrl],
     identifierUris: [`http://${apiAppName}`],
     appRoles: [{  
         allowedMemberTypes: [ "User" ], 
