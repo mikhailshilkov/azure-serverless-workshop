@@ -34,7 +34,7 @@ const container = new azure.storage.Container("mycontainer", {
 });
 ```
 
-> :white_check_mark: After this change, your files should [look like this](./code/04/).
+> :white_check_mark: After this change, your files should [look like this](./code/05/).
 
 ## Step 3 &mdash; Deploying the Changes
 
