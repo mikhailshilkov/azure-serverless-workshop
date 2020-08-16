@@ -11,6 +11,8 @@ Add the following to your `index.ts` file:
 const resourceGroup = new azure.core.ResourceGroup("my-group");
 ```
 
+> :white_check_mark: After this change, your `index.ts` should [look like this](./code/03/index.ts).
+
 ## Step 2 &mdash; Preview Your Changes
 
 Now preview your changes:

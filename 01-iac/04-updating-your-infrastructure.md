@@ -105,6 +105,8 @@ const container = new azure.storage.Container("mycontainer", {
 
 Note that I want to give an explicit name to the storage container instead of an auto-generated one, so I used the property `name` to set it.
 
+> :white_check_mark: After this change, your `index.ts` should [look like this](./code/04/index.ts).
+
 Deploy the changes:
 
 ```bash

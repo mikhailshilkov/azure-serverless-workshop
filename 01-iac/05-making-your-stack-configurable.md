@@ -34,6 +34,8 @@ const container = new azure.storage.Container("mycontainer", {
 });
 ```
 
+> :white_check_mark: After this change, your files should [look like this](./code/04/).
+
 ## Step 3 &mdash; Deploying the Changes
 
 Now, deploy your changes. To do so, first configure your stack. If you don't, you'll get an error:
