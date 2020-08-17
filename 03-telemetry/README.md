@@ -150,8 +150,6 @@ Duration: 14m22s
 
 You may continue with the next steps while the deployment is running.
 
-> :white_check_mark: After these changes, your files should [look like this](./code/step2).
-
 ## Step 3 &mdash; Create an Event Hub
 
 Azure Event Hubs are a log-based messaging services. In our sample scenario, Event Hubs will receive telemetry messages from IoT devices (drones).
