@@ -193,7 +193,7 @@ const consumerGroup = new azure.eventhub.ConsumerGroup(consumerGroupName, {
 }, { parent: eventHub });
 ```
 
-Finally, let's define two access keys: one key to send data to the Event Hub and another one to send messages to it:
+Finally, let's define two access keys: one key to send data to the Event Hub and another one to listen to messages from it:
 
 ```ts
 const sendEventSourceKey = new azure.eventhub.AuthorizationRule("send", {

@@ -34,7 +34,7 @@ There are several options to deploy Azure Functions. The serverless pay-per-exec
 
 There’s no resource named Consumption Plan, however. The resource name is inherited from Azure App Service: Consumption is one kind of an App Service Plan. It’s the SKU property of the resource that defines the type of hosting plan.
 
-Here is the block that define a Consumption Plan:
+Here is the block that defines a Consumption Plan:
 
 ```ts
 const plan = new azure.appservice.Plan("asp", {
