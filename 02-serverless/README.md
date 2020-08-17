@@ -186,7 +186,7 @@ const blob = new azure.storage.Blob("zip", {
     source: new pulumi.asset.FileArchive("./functions"),
 });
 
-var codeBlobUrl = Azure.Storage.SharedAccessSignature.SignedBlobReadUrl(blob, storageAccount);
+const codeBlobUrl = azure.storage.signedBlobReadUrl(blob, storageAccount);
 ```
 
 Change the `appSettings` of the `FunctionApp` to point to the new blob:
