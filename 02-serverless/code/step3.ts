@@ -1,32 +1,35 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
+import * as web from "@pulumi/azure-nextgen/web/latest";
 
-const resourceGroup = new azure.core.ResourceGroup("my-group");
-
-const storageAccount = new azure.storage.Account("storage", {
-    resourceGroupName: resourceGroup.name,
-    accountReplicationType: "LRS",
-    accountTier: "Standard",
+const resourceGroup = new resources.ResourceGroup("my-group", {
+    resourceGroupName: "my-group",
+    location: "westus",
 });
 
-const plan = new azure.appservice.Plan("asp", {
+const storageAccount = new storage.StorageAccount("mystorage", {
     resourceGroupName: resourceGroup.name,
-    kind: "FunctionApp",
+    accountName: "myuniquename",
+    location: resourceGroup.location,
     sku: {
+        name: "Standard_LRS",
+    },
+    kind: "StorageV2",
+});
+
+const plan = new web.AppServicePlan("asp", {
+    resourceGroupName: resourceGroup.name,
+    name: "consumption-plan",
+    location: resourceGroup.location,
+    sku: {
+        name: "Y1",
         tier: "Dynamic",
-        size: "Y1",
     },
 });
 
-const app = new azure.appservice.FunctionApp("fa", {
-    resourceGroupName: resourceGroup.name,
-    appServicePlanId: plan.id,
-    storageAccountName: storageAccount.name,
-    storageAccountAccessKey: storageAccount.primaryAccessKey,
-    version: "~3",
-    appSettings: {
-        FUNCTIONS_WORKER_RUNTIME: "node",
-        WEBSITE_NODE_DEFAULT_VERSION: "10.14.1",
-        WEBSITE_RUN_FROM_PACKAGE: "https://mikhailworkshop.blob.core.windows.net/zips/app.zip",
-    }
-});
+const storageAccountKeys = pulumi.all([resourceGroup.name, storageAccount.name]).apply(([resourceGroupName, accountName]) =>
+    storage.listStorageAccountKeys({ resourceGroupName, accountName }));
+
+const primaryStorageKey = storageAccountKeys.keys[0].value;
+const storageConnectionString = pulumi.interpolate`DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${primaryStorageKey}`;

@@ -1,60 +1,49 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as apimanagement from "@pulumi/azure-nextgen/apimanagement/latest";
 import * as azure from "@pulumi/azure";
-import { appName, resourceGroupId, resourceGroupName } from "./common";
+import { appName, location, resourceGroupName } from "./common";
 import * as functionApp from "./functionApp";
 import * as website from "./website";
 
 const apiManagementName = `${appName}-apim`;
-const arm = `{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [{
-        "apiVersion": "2019-12-01",
-        "name": "${apiManagementName}",
-        "type": "Microsoft.ApiManagement/service",
-        "location": "westeurope",
-        "sku": {
-            "name": "Consumption",
-            "capacity": "0"
-        },
-        "properties": {
-            "publisherEmail": "drones@contoso.com",
-            "publisherName": "contoso"
-        }
-    }]
-}`;
-
-const template = new azure.core.TemplateDeployment(`${appName}-at`, {
+const apiManagement = new apimanagement.ApiManagementService(apiManagementName, {
     resourceGroupName: resourceGroupName,
-    templateBody: arm,
-    deploymentMode: "Incremental",
+    serviceName: apiManagementName,
+    location: location,
+    sku: {
+        name: "Consumption",
+        capacity: 0,
+    },
+    publisherEmail: "drones@contoso.com",
+    publisherName: "contoso",
 });
-const apiManagementId = `${resourceGroupId}/providers/Microsoft.ApiManagement/service/${apiManagementName}`;
+const apiManagementId = apiManagement.id;
 
-const versionSet = new azure.apimanagement.ApiVersionSet("dronestatusversionset", {
+const versionSet = new apimanagement.ApiVersionSet("dronestatusversionset", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    name: "dronestatusversionset",
+    serviceName: apiManagement.name,
+    versionSetId: "dronestatusversionset",
     displayName: "Drone Delivery API",
     versioningScheme: "Segment",
-}, { dependsOn: template });
+});
 
-const api = new azure.apimanagement.Api("dronedeliveryapiv1", {
+const api = new apimanagement.Api("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
+    apiId: "dronedeliveryapiv1",
     displayName: "Drone Delivery API",
     description: "Drone Delivery API",
     path: "api",
-    version: "v1",
-    revision: "1",
-    versionSetId: versionSet.id,
+    apiVersion: "v1",
+    apiRevision: "1",
+    apiVersionSetId: versionSet.id,
     protocols: ["https"],
 });
 
-const apiOperation = new azure.apimanagement.ApiOperation("dronestatusGET", {
+const apiOperation = new apimanagement.ApiOperation("dronestatusGET", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    apiName: api.name,
+    serviceName: apiManagementName,
+    apiId: api.name,
     operationId: "dronestatusGET",
     displayName: "Retrieve drone status",
     description: "Retrieve drone status",
@@ -70,35 +59,26 @@ const apiOperation = new azure.apimanagement.ApiOperation("dronestatusGET", {
     ],
 });
 
-const apiValueFunctionCode = new azure.apimanagement.NamedValue("getstatusfunctionapp-code", {
-    name: "getstatusfunctionapp-code",
-    displayName: "getstatusfunctionapp-code",
+const backend = new apimanagement.Backend("dronestatusdotnet", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    tags: ["key", "function", "code"],
-    secret: true,
-    value: functionApp.key,
-}, { dependsOn: template });
-
-const backend = new azure.apimanagement.Backend("dronestatusdotnet", {
-    name: "dronestatusdotnet",
-    resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
+    backendId: "dronestatusdotnet",
     resourceId: pulumi.interpolate`https://management.azure.com/${functionApp.id}`,
-    credentials: {
-        query: {
-            code: pulumi.interpolate`{{${apiValueFunctionCode.name}}}`,
-        },
-    },
+    // credentials: {
+    //     query: {
+    //         code: pulumi.interpolate`{{${apiValueFunctionCode.name}}}`,
+    //     },
+    // },
     url: functionApp.appUrl,
     protocol: "http",
 });
 
-const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
+const apiPolicy = new apimanagement.ApiPolicy("policy", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    apiName: api.name,
-    xmlContent: pulumi.interpolate`
+    serviceName: apiManagementName,
+    apiId: api.name,
+    policyId: "policy",
+    value: pulumi.interpolate`
 <policies>
     <inbound>
         <base />
@@ -124,22 +104,22 @@ const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
 </policies>`,
 });
 
-const product = new azure.apimanagement.Product("dronedeliveryprodapi", {
+const product = new apimanagement.Product("dronedeliveryprodapi", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
     productId: "dronedeliveryprodapi",
     displayName: "drone delivery product api",
     description: "drone delivery product api",
     terms: "terms for example product",
-    subscriptionRequired: false,
-    published: true,
-}, { dependsOn: template });
+    subscriptionRequired: false,    
+    state: "published",
+});
 
 const productApi = new azure.apimanagement.ProductApi("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,
     apiManagementName: apiManagementName,
     apiName: api.name,
-    productId: product.productId,
+    productId: product.name,
 });
 
 export const apiUrl = pulumi.interpolate`https://${apiManagementName}.azure-api.net/${api.path}/v1/dronestatus/`;

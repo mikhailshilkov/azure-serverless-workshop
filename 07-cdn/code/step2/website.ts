@@ -1,6 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
-import { appName, resourceGroupName } from "./common";
+import * as pulumi from "@pulumi/pulumi";
+import * as cdn from "@pulumi/azure-nextgen/cdn/latest";
+import { appName, location, resourceGroupName } from "./common";
 
 export const storageAccount = new azure.storage.Account(`${appName}fe`, {
     resourceGroupName: resourceGroupName,
@@ -17,14 +18,18 @@ export const storageAccount = new azure.storage.Account(`${appName}fe`, {
 
 export const storageAccountUrl = storageAccount.primaryWebEndpoint;
 
-const cdnProfile = new azure.cdn.Profile("profile", {
+const cdnProfile = new cdn.Profile("profile", {
     resourceGroupName: resourceGroupName,
-    sku: "Standard_Microsoft",
+    profileName: `${appName}-cdn`,
+    location: location,
+    sku: { name: "Standard_Microsoft" },
 });
 
-const cdnEndpoint = new azure.cdn.Endpoint("endpoint", {
+const cdnEndpoint = new cdn.Endpoint("endpoint", {
     resourceGroupName: resourceGroupName,
     profileName: cdnProfile.name,
+    endpointName: `${appName}-endpoint`,
+    location: location,
     isHttpAllowed: false,
     origins: [{ name: "origin", hostName: storageAccount.primaryWebHost }],
     originHostHeader: storageAccount.primaryWebHost,

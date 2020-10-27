@@ -13,8 +13,6 @@ Add several extra lines to the `functionApp.ts` file to export information requi
 ```ts
 export const id = droneStatusFunctionApp.id;
 export const appUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostname}/api`;
-export const key = droneStatusFunctionApp.getFunctionKeys("GetStatusFunction").default;
-export const functionUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostname}/api/GetStatusFunction?deviceId=`;
 ```
 
 > :white_check_mark: After these changes, your files should [look like this](./code/step1).
@@ -25,58 +23,31 @@ Create a new file called `api.ts` in the same `statusapp` folder. Add the follow
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
+import * as apimanagement from "@pulumi/azure-nextgen/apimanagement/latest";
 import * as azure from "@pulumi/azure";
-import { appName, resourceGroupId, resourceGroupName } from "./common";
+import { appName, location, resourceGroupName } from "./common";
 import * as functionApp from "./functionApp";
 import * as website from "./website";
 ```
 
 ## Step 3 &mdash; Deploy an API Management Service
 
-As of today, there is a bug in the Pulumi's Azure provider that prevents provisioning an API Management Service at Consumption tier. When this bug is fixed, the following code would create a service:
-
-```ts
-// This will work when this issue is fixed:
-// https://github.com/terraform-providers/terraform-provider-azurerm/issues/6730
-//
-// const apiManagement = new azure.apimanagement.Service(apiManagementName, {
-//     resourceGroupName: resourceGroupName,
-//     skuName: "Consumption_0",
-//     publisherEmail: "drones@contoso.com",
-//     publisherName: "contoso",
-// });
-//const apiManagementId = apiManagement.id;
-```
-
-To work around this issue, deploy the service with an inline ARM Template. Add this code to `api.ts`:
+Define an API Management Service at Consumption tier. Add this code to `api.ts`:
 
 ```ts
 const apiManagementName = `${appName}-apim`;
-const arm = `{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [{
-        "apiVersion": "2019-12-01",
-        "name": "${apiManagementName}",
-        "type": "Microsoft.ApiManagement/service",
-        "location": "westeurope",
-        "sku": {
-            "name": "Consumption",
-            "capacity": "0"
-        },
-        "properties": {
-            "publisherEmail": "drones@contoso.com",
-            "publisherName": "contoso"
-        }
-    }]
-}`;
-
-const template = new azure.core.TemplateDeployment(`${appName}-at`, {
+const apiManagement = new apimanagement.ApiManagementService(apiManagementName, {
     resourceGroupName: resourceGroupName,
-    templateBody: arm,
-    deploymentMode: "Incremental",
+    serviceName: apiManagementName,
+    location: location,
+    sku: {
+        name: "Consumption",
+        capacity: 0,
+    },
+    publisherEmail: "drones@contoso.com",
+    publisherName: "contoso",
 });
-const apiManagementId = `${resourceGroupId}/providers/Microsoft.ApiManagement/service/${apiManagementName}`;
+const apiManagementId = apiManagement.id;
 ```
 
 > :white_check_mark: After these changes, your files should [look like this](./code/step3).
@@ -88,27 +59,28 @@ There are quite a few resources to define in API Management. Let's add them one 
 API Management has version management capabilities. Define a version set, even though you will only have a single version in this lab. 
 
 ```ts
-const versionSet = new azure.apimanagement.ApiVersionSet("dronestatusversionset", {
+const versionSet = new apimanagement.ApiVersionSet("dronestatusversionset", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    name: "dronestatusversionset",
+    serviceName: apiManagement.name,
+    versionSetId: "dronestatusversionset",
     displayName: "Drone Delivery API",
     versioningScheme: "Segment",
-}, { dependsOn: template });
+});
 ```
 
 Add the API definition for our Drone Status functionality:
 
 ```ts
-const api = new azure.apimanagement.Api("dronedeliveryapiv1", {
+const api = new apimanagement.Api("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
+    apiId: "dronedeliveryapiv1",
     displayName: "Drone Delivery API",
     description: "Drone Delivery API",
     path: "api",
-    version: "v1",
-    revision: "1",
-    versionSetId: versionSet.id,
+    apiVersion: "v1",
+    apiRevision: "1",
+    apiVersionSetId: versionSet.id,
     protocols: ["https"],
 });
 ```
@@ -116,10 +88,10 @@ const api = new azure.apimanagement.Api("dronedeliveryapiv1", {
 Add an operation to this API:
 
 ```ts
-const apiOperation = new azure.apimanagement.ApiOperation("dronestatusGET", {
+const apiOperation = new apimanagement.ApiOperation("dronestatusGET", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    apiName: api.name,
+    serviceName: apiManagementName,
+    apiId: api.name,
     operationId: "dronestatusGET",
     displayName: "Retrieve drone status",
     description: "Retrieve drone status",
@@ -136,33 +108,14 @@ const apiOperation = new azure.apimanagement.ApiOperation("dronestatusGET", {
 });
 ```
 
-Add a named config value to store the Function Key to authorize in Azure Functions:
-
-```ts
-const apiValueFunctionCode = new azure.apimanagement.NamedValue("getstatusfunctionapp-code", {
-    name: "getstatusfunctionapp-code",
-    displayName: "getstatusfunctionapp-code",
-    resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    tags: ["key", "function", "code"],
-    secret: true,
-    value: functionApp.key,
-}, { dependsOn: template });
-```
-
 Add a backend that points to our existing Function App:
 
 ```ts
-const backend = new azure.apimanagement.Backend("dronestatusdotnet", {
-    name: "dronestatusdotnet",
+const backend = new apimanagement.Backend("dronestatusdotnet", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
+    backendId: "dronestatusdotnet",
     resourceId: pulumi.interpolate`https://management.azure.com/${functionApp.id}`,
-    credentials: {
-        query: {
-            code: pulumi.interpolate`{{${apiValueFunctionCode.name}}}`,
-        },
-    },
     url: functionApp.appUrl,
     protocol: "http",
 });
@@ -171,11 +124,12 @@ const backend = new azure.apimanagement.Backend("dronestatusdotnet", {
 Add an API Policy that defines the behavior of the operation:
 
 ```ts
-const apiPolicy = new azure.apimanagement.ApiPolicy("policy", {
+const apiPolicy = new apimanagement.ApiPolicy("policy", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
-    apiName: api.name,
-    xmlContent: pulumi.interpolate`
+    serviceName: apiManagementName,
+    apiId: api.name,
+    policyId: "policy",
+    value: pulumi.interpolate`
 <policies>
     <inbound>
         <base />
@@ -207,24 +161,26 @@ Note the CORS policy that allows requests from our static website. You will exte
 Add a product and a product API link:
 
 ```ts
-const product = new azure.apimanagement.Product("dronedeliveryprodapi", {
+const product = new apimanagement.Product("dronedeliveryprodapi", {
     resourceGroupName: resourceGroupName,
-    apiManagementName: apiManagementName,
+    serviceName: apiManagementName,
     productId: "dronedeliveryprodapi",
     displayName: "drone delivery product api",
     description: "drone delivery product api",
     terms: "terms for example product",
-    subscriptionRequired: false,
-    published: true,
-}, { dependsOn: template });
+    subscriptionRequired: false,    
+    state: "published",
+});
 
 const productApi = new azure.apimanagement.ProductApi("dronedeliveryapiv1", {
     resourceGroupName: resourceGroupName,
     apiManagementName: apiManagementName,
     apiName: api.name,
-    productId: product.productId,
+    productId: product.name,
 });
 ```
+
+Note that the product API is defined using a resource from the Terraform-based Azure provider due a limitation in the current version of the Azure NextGen provider.
 
 Finally, export the API URL:
 
@@ -260,29 +216,28 @@ Deploy the stack
 $ pulumi up
 ...
 Updating (dev):
-     Type                                  Name                                                         Status       Info
-     pulumi:pulumi:Stack                   statusapp-dev                                                             
- +   ├─ azure:core:TemplateDeployment      status-at                                                    created      
- +   ├─ azure:apimanagement:NamedValue     getstatusfunctionapp-code                                    created      
- +   ├─ azure:apimanagement:ApiVersionSet  dronestatusversionset                                        created      
- +   ├─ azure:apimanagement:Product        dronedeliveryprodapi                                         created      
- +   ├─ azure:apimanagement:Backend        dronestatusdotnet                                            created      
- +   ├─ azure:apimanagement:Api            dronedeliveryapiv1                                           created      
-     ├─ azure:storage:Account              statusfe                                                                  
- +-  │  ├─ azure:storage:Blob              component---src-pages-index-tsx-5b72260d4d41d26e7efc.js      replaced     [di
- +-  │  └─ azure:storage:Blob              component---src-pages-index-tsx-5b72260d4d41d26e7efc.js.map  replaced     [di
- +   ├─ azure:apimanagement:ApiPolicy      policy                                                       created      
- +   ├─ azure:apimanagement:ProductApi     dronedeliveryapiv1                                           created      
- +   └─ azure:apimanagement:ApiOperation   dronestatusGET                                               created      
+     Type                                                        Name                                            Status
+     pulumi:pulumi:Stack                                         workshop-nextgen-status-dev                                        
+ +   └─ azure-nextgen:apimanagement/latest:ApiManagementService  status-apim                                     created
+ +   ├─ azure-nextgen:apimanagement/latest:Product               dronedeliveryprodapi                            created    
+ +   ├─ azure-nextgen:apimanagement/latest:ApiVersionSet         dronestatusversionset                           created    
+ +   ├─ azure-nextgen:apimanagement/latest:Backend               dronestatusdotnet                               created    
+ +   ├─ azure-nextgen:apimanagement/latest:Api                   dronedeliveryapiv1                              created    
+     ├─ azure:storage:Account                                    statusfe                                                                
+ +-  │  ├─ azure:storage:Blob                                    component---src-pages-index-tsx-5b72260.js      replaced 
+ +-  │  └─ azure:storage:Blob                                    component---src-pages-index-tsx-5b72260.js.map  replaced 
+ +   ├─ azure:apimanagement:ProductApi                           dronedeliveryapiv1                              created    
+ +   ├─ azure-nextgen:apimanagement/latest:ApiPolicy             policy                                          created    
+ +   └─ azure-nextgen:apimanagement/latest:ApiOperation          dronestatusGET                                  created     
  
 Outputs:
     functionUrl      : "https://status-app471111f49.azurewebsites.net/api/GetStatusFunction?deviceId="
     storageAccountUrl: "https://statusfe2867cccd.z6.web.core.windows.net/"
 
 Resources:
-    + 9 created
+    + 8 created
     +-2 replaced
-    11 changes. 25 unchanged
+    10 changes. 26 unchanged
 ```
 
 Navigate to the `storageAccountUrl` in a browser, hit refresh, and make sure that the app still works. You may turn on a network tab in browser developer tools and see that the request comes to API Management instead of Function Apps.
