@@ -1,19 +1,29 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
+import * as web from "@pulumi/azure-nextgen/web/latest";
 
-const resourceGroup = new azure.core.ResourceGroup("my-group");
-
-const storageAccount = new azure.storage.Account("storage", {
-    resourceGroupName: resourceGroup.name,
-    accountReplicationType: "LRS",
-    accountTier: "Standard",
+const resourceGroup = new resources.ResourceGroup("my-group", {
+    resourceGroupName: "my-group",
+    location: "westus",
 });
 
-const plan = new azure.appservice.Plan("asp", {
+const storageAccount = new storage.StorageAccount("mystorage", {
     resourceGroupName: resourceGroup.name,
-    kind: "FunctionApp",
+    accountName: "myuniquename",
+    location: resourceGroup.location,
     sku: {
+        name: "Standard_LRS",
+    },
+    kind: "StorageV2",
+});
+
+const plan = new web.AppServicePlan("asp", {
+    resourceGroupName: resourceGroup.name,
+    name: "consumption-plan",
+    location: resourceGroup.location,
+    sku: {
+        name: "Y1",
         tier: "Dynamic",
-        size: "Y1",
     },
 });

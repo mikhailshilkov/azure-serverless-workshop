@@ -50,3 +50,5 @@ const app = new web.WebApp("fa", {
         ]    
     },
 });
+
+export const endpoint = pulumi.interpolate`https://${app.defaultHostName}/api/hello`;

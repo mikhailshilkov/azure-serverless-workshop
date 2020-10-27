@@ -28,9 +28,10 @@ import { containerName } from "./config";
 And replace the hard-coded `"files"` parameter with this imported `containerName` variable:
 
 ```typescript
-const container = new azure.storage.Container("mycontainer", {
-    name: containerName,
-    storageAccountName: storageAccount.name,
+const container = new storage.BlobContainer("mycontainer", {
+    resourceGroupName: resourceGroup.name,
+    accountName: storageAccount.name,
+    containerName: containerName,
 });
 ```
 
@@ -53,7 +54,7 @@ ConfigMissingException: Missing Required configuration variable 'iac-workshop:co
 ...
 ```
 
-Configure the `iac-workshop:container` variable very much like the `azure:location` variable:
+Configure the `iac-workshop:container` variable:
 
 ```bash
 pulumi config set container html
@@ -66,12 +67,12 @@ Run `pulumi up` again. This detects that the container has changed and will perf
 ```
 Updating (dev):
 
-     Type                        Name              Status      Info
-     pulumi:pulumi:Stack         iac-workshop-dev
-  +- └─ azure:storage:Container  mycontainer       replaced    [diff: ~name]
+     Type                                           Name              Status      Info
+     pulumi:pulumi:Stack                            iac-workshop-dev
+  +- └─ azure-nextgen:storage/latest:BlobContainer  mycontainer       replaced    [diff: ~containerName]
 
 Outputs:
-    AccountName: "mystorage872202e1"
+    AccountName: "myuniquename"
 
 Resources:
     +-1 replaced

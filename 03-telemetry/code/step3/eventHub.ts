@@ -1,41 +1,67 @@
-import * as azure from "@pulumi/azure";
-import { appName, resourceGroupName } from "./common";
+import * as pulumi from "@pulumi/pulumi";
+import * as eventhub from "@pulumi/azure-nextgen/eventhub/latest";
+import { appName, location, resourceGroupName } from "./common";
 
-const eventHubNamespace = new azure.eventhub.EventHubNamespace(`${appName}-ns`, {
+const eventHubNamespace = new eventhub.Namespace(`${appName}-ns`, {
     resourceGroupName: resourceGroupName,
-    sku: "Standard",    
+    namespaceName: `${appName}-ns`,
+    location: location,
+    sku: {
+        name: "Standard",
+    },
 });
 
-const eventHub = new azure.eventhub.EventHub(`${appName}-eh`, {
+const eventHub = new eventhub.EventHub(`${appName}-eh`, {
     resourceGroupName: resourceGroupName,
     namespaceName: eventHubNamespace.name,
-    messageRetention: 1,
+    eventHubName: `${appName}-eh`,
+    messageRetentionInDays: 1,
     partitionCount: 4,
 }, { parent: eventHubNamespace });
 
 export const consumerGroupName = "dronetelemetry";
-const consumerGroup = new azure.eventhub.ConsumerGroup(consumerGroupName, {
-    name: consumerGroupName,
+const consumerGroup = new eventhub.ConsumerGroup(consumerGroupName, {
     resourceGroupName: resourceGroupName,
     namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
-}, { parent: eventHub });
-
-const sendEventSourceKey = new azure.eventhub.AuthorizationRule("send", {
-    resourceGroupName: resourceGroupName,
-    namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
-    send: true,
-}, { parent: eventHub });
-
-const listenEventSourceKey = new azure.eventhub.AuthorizationRule("listen", {
-    resourceGroupName: resourceGroupName,
-    namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
-    listen: true,
+    eventHubName: eventHub.name,
+    consumerGroupName: consumerGroupName,
 }, { parent: eventHub });
 
 export const namespace = eventHubNamespace.name;
 export const name = eventHub.name;
-export const listenConnectionString = listenEventSourceKey.primaryConnectionString;
-export const sendConnectionString = sendEventSourceKey.primaryConnectionString;
+
+const sendEventSourceKey = new eventhub.EventHubAuthorizationRule("send", {
+    resourceGroupName: resourceGroupName,
+    namespaceName: eventHubNamespace.name,
+    eventHubName: eventHub.name,
+    authorizationRuleName: "send",
+    rights: ["send"],
+}, { parent: eventHub });
+
+const listenEventSourceKey = new eventhub.EventHubAuthorizationRule("listen", {
+    resourceGroupName: resourceGroupName,
+    namespaceName: eventHubNamespace.name,
+    eventHubName: eventHub.name,
+    authorizationRuleName: "listen",
+    rights: ["listen"],
+}, { parent: eventHub });
+
+const sendKeys = pulumi.all([resourceGroupName, eventHubNamespace.name, eventHub.name, sendEventSourceKey.name])
+    .apply(([resourceGroupName, namespaceName, eventHubName, authorizationRuleName]) =>
+        eventhub.listEventHubKeys({
+            resourceGroupName,
+            namespaceName,
+            eventHubName,
+            authorizationRuleName,
+        }));
+export const sendConnectionString = sendKeys.primaryConnectionString;
+
+const listenKeys = pulumi.all([resourceGroupName, eventHubNamespace.name, eventHub.name, listenEventSourceKey.name])
+    .apply(([resourceGroupName, namespaceName, eventHubName, authorizationRuleName]) =>
+        eventhub.listEventHubKeys({
+            resourceGroupName,
+            namespaceName,
+            eventHubName,
+            authorizationRuleName,
+        }));
+export const listenConnectionString = listenKeys.primaryConnectionString;

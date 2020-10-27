@@ -1,4 +1,8 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
 
-const resourceGroup = new azure.core.ResourceGroup("my-group");
+const resourceGroup = new resources.ResourceGroup("my-group", {
+    resourceGroupName: "my-group",
+    location: "westus",
+});

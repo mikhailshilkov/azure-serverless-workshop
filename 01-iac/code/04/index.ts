@@ -1,17 +1,26 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
 
-const resourceGroup = new azure.core.ResourceGroup("my-group");
-
-const storageAccount = new azure.storage.Account("mystorage", {
-    resourceGroupName: resourceGroup.name,
-    accountReplicationType: "LRS",
-    accountTier: "Standard",
+const resourceGroup = new resources.ResourceGroup("my-group", {
+    resourceGroupName: "my-group",
+    location: "westus",
 });
 
-const container = new azure.storage.Container("mycontainer", {
-    name: "files",
-    storageAccountName: storageAccount.name,
+const storageAccount = new storage.StorageAccount("mystorage", {
+    resourceGroupName: resourceGroup.name,
+    accountName: "myuniquename",
+    location: resourceGroup.location,
+    sku: {
+        name: "Standard_LRS",
+    },
+    kind: "StorageV2",
+});
+
+const container = new storage.BlobContainer("mycontainer", {
+    resourceGroupName: resourceGroup.name,
+    accountName: storageAccount.name,
+    containerName: "files",
 });
 
 export const accountName = storageAccount.name;

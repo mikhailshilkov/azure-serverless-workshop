@@ -1,16 +1,14 @@
 # Lab 3: Deploying a Data Processing pipeline
 
-In this lab, you will deploy a Azure Function Apps that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
+In this lab, you will deploy a Azure Function App that is triggered by messages in an Event Hub. The device data from the messages will be saved to Azure Cosmos DB. You will also setup a dead-letter queue for messages that failed to be processed and Azure Application Insights for monitoring.
 
 Create a new Pulumi project called `telemetry` from your root workshop folder:
 
 ```bash
 mkdir telemetry
 cd telemetry
-pulumi new azure-typescript -y
+pulumi new azure-nextgen-typescript -y
 ```
-
-Run `pulumi config set azure:location westeurope --stack dev` to create a stack called `dev` and to set your Azure region (replace `westeurope` with the closest one).
 
 Remove all the code from `index.ts`: this time, we'll structure the program differently. In this lab, you need to create resources in three functional areas: Cosmos DB, Event Hubs, and Function Apps. Let's split these resources into five TypeScript files:
 
@@ -25,11 +23,14 @@ Remove all the code from `index.ts`: this time, we'll structure the program diff
 Create a new file called `common.ts` in the same `telemetry` folder where `index.ts` exists. Add the following lines to it:
 
 ```ts
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
 
 export const appName = "telemetry";
 
-const resourceGroup = new azure.core.ResourceGroup(`${appName}-rg`);
+const resourceGroup = new resources.ResourceGroup(`${appName}-rg`, {
+    resourceGroupName: `${appName}-rg`,
+    location: "WestEurope",
+});
 ```
 
 You are going to name all resources with a common prefix `telemetry`, so you declare and export a variable `appName` to avoid copy-pasting. The third line creates a new resource group `telemetry-rg`.
@@ -56,51 +57,64 @@ Next, you define a NoSQL database to store the telemetry data. Azure Cosmos DB s
 Create a new file `cosmos.ts`. Use the following import statements to load Pulumi and the common variables that we defined in step 1:
 
 ```ts
-import * as azure from "@pulumi/azure";
+import * as pulumi from "@pulumi/pulumi";
+import * as documentdb from "@pulumi/azure-nextgen/documentdb/latest";
 import { appName, location, resourceGroupName } from "./common";
 ```
 
 Define a Cosmos DB account:
 
 ```ts
-const databaseAccount = new azure.cosmosdb.Account(`${appName}-acc`, {
+const databaseAccount = new documentdb.DatabaseAccount(`${appName}-acc`, {
     resourceGroupName: resourceGroupName,
-    offerType: "Standard",
-    geoLocations: [{ location: location, failoverPriority: 0 }],
+    accountName: `${appName}-acc`,
+    location: location,
+    databaseAccountOfferType: "Standard",
+    capabilities: [{
+        name: "EnableServerless",
+    }],
+    locations: [{ locationName: location, failoverPriority: 0 }],
     consistencyPolicy: {
-        consistencyLevel: "Session",
+        defaultConsistencyLevel: "Session",
     },
 });
 ```
 
-Notably, we deploy Cosmos DB to a single region: this saves cost for the workshop resources. A geo-redundant deployment would simply add more entries to the array above. We also defined our consistency policy to `Session`.
+Notably, we deploy Cosmos DB to a single region using the "serverless" tier: this saves cost for the workshop resources. A geo-redundant deployment would remove the `EnableServerless` capability and add more entries to the array above. We also defined our consistency policy to `Session`.
 
 Add a database to this account:
 
 ```ts
 export const databaseName = "db";
-const database = new azure.cosmosdb.SqlDatabase(databaseName, {
-    name: databaseName,
+const database = new documentdb.SqlResourceSqlDatabase(databaseName, {    
+    databaseName: databaseName,
     resourceGroupName: resourceGroupName,
     accountName: databaseAccount.name,
+    resource: {
+        id: databaseName,
+    },
+    options: {},
 }, { parent: databaseAccount });
 ```
 
-Note two things about this definition:
-
-- You set an explicit value for the `name` property. This turns off autonaming by Pulumi so that the actual name of the Azure resource is `db`.
-- You set the `parent` option to the `databaseAccount` resource. This is not required, but this option gives a hint to Pulumi preview to display the `db` resource under the `telemetry-acc` resource.
+Note that we set the `parent` option to the `databaseAccount` resource. This is not required, but this option gives a hint to Pulumi preview to display the `db` resource under the `telemetry-acc` resource.
 
 Finally, add a SQL collection to the database:
 
 ```ts
 export const collectionName = "items";
-const collection = new azure.cosmosdb.SqlContainer(collectionName, {
-    name: collectionName,
+const collection = new documentdb.SqlResourceSqlContainer(collectionName, {
+    containerName: collectionName,
     resourceGroupName: resourceGroupName,
     accountName: databaseAccount.name,
     databaseName: database.name,
-    partitionKeyPath: "/id",
+    resource: {
+        id: collectionName,
+        partitionKey: {
+            paths: ["/id"]
+        },
+    },
+    options: {},
 }, { parent: database });
 ```
 
@@ -109,9 +123,17 @@ Note the partition key: it has to be set to `/id`, otherwise the application won
 You also need to export several pieces of connection information to be used in the application:
 
 ```ts
-export const connectionString = databaseAccount.connectionStrings[0];
-export const endpoint = databaseAccount.endpoint;
-export const masterKey = databaseAccount.primaryMasterKey;
+const keys = pulumi.all([resourceGroupName, databaseAccount.name])
+    .apply(([resourceGroupName, accountName]) =>
+        documentdb.listDatabaseAccountKeys({ resourceGroupName, accountName }));
+
+const connectionStrings = pulumi.all([resourceGroupName, databaseAccount.name])
+    .apply(([resourceGroupName, accountName]) =>
+        documentdb.listDatabaseAccountConnectionStrings({ resourceGroupName, accountName }));
+
+export const connectionString = connectionStrings.apply(cs => cs.connectionStrings![0].connectionString);
+export const endpoint = databaseAccount.documentEndpoint;
+export const masterKey = keys.primaryMasterKey;
 ```
 
 Also, add a new import to the `index.ts` file. Also, export Cosmos DB credentials: you will use them in the following labs.
@@ -124,7 +146,6 @@ export const cosmosCollectionName = cosmos.collectionName;
 export const cosmosConnectionString = cosmos.connectionString;
 export const cosmosEndpoint = cosmos.endpoint;
 export const cosmosMasterKey = cosmos.masterKey;
-
 ```
 
 > :white_check_mark: After these changes, your files should [look like this](./code/step2).
@@ -135,12 +156,12 @@ Note: it takes 10-15 minutes to provision a new Cosmos DB account. Go ahead and 
 $ pulumi up
 ...
 Updating (dev):
-     Type                                  Name           Status      
- +   pulumi:pulumi:Stack                   telemetry-dev  created     
- +   ├─ azure:core:ResourceGroup           telemetry-rg   created     
- +   └─ azure:cosmosdb:Account             telemetry-acc  created     
- +      └─ azure:cosmosdb:SqlDatabase      db             created     
- +         └─ azure:cosmosdb:SqlContainer  items          created     
+     Type                                                              Name           Plan       
+ +   pulumi:pulumi:Stack                                               telemetry-dev  created    
+ +   ├─ azure-nextgen:resources/latest:ResourceGroup                   telemetry-rg   created    
+ +   └─ azure-nextgen:documentdb/latest:DatabaseAccount                telemetry-acc  created    
+ +      └─ azure-nextgen:documentdb/latest:SqlResourceSqlDatabase      db             created    
+ +         └─ azure-nextgen:documentdb/latest:SqlResourceSqlContainer  items          created    
  
 Resources:
     + 5 created
@@ -157,26 +178,32 @@ Azure Event Hubs are a log-based messaging services. In our sample scenario, Eve
 Create a new file `eventHub.ts` and initialize its imports:
 
 ```ts
-import * as azure from "@pulumi/azure";
-import { appName, resourceGroupName } from "./common";
+import * as pulumi from "@pulumi/pulumi";
+import * as eventhub from "@pulumi/azure-nextgen/eventhub/latest";
+import { appName, location, resourceGroupName } from "./common";
 ```
 
 Start with a namespace for Event Hubs:
 
 ```ts
-const eventHubNamespace = new azure.eventhub.EventHubNamespace(`${appName}-ns`, {
+const eventHubNamespace = new eventhub.Namespace(`${appName}-ns`, {
     resourceGroupName: resourceGroupName,
-    sku: "Standard",    
+    namespaceName: `${appName}-ns`,
+    location: location,
+    sku: {
+        name: "Standard",
+    },
 });
 ```
 
 Then, add a new Event Hub to this namespace:
 
 ```ts
-const eventHub = new azure.eventhub.EventHub(`${appName}-eh`, {
+const eventHub = new eventhub.EventHub(`${appName}-eh`, {
     resourceGroupName: resourceGroupName,
     namespaceName: eventHubNamespace.name,
-    messageRetention: 1,
+    eventHubName: `${appName}-eh`,
+    messageRetentionInDays: 1,
     partitionCount: 4,
 }, { parent: eventHubNamespace });
 ```
@@ -185,39 +212,63 @@ Event Hub messages are always received in a context of a consumer group: a logic
 
 ```ts
 export const consumerGroupName = "dronetelemetry";
-const consumerGroup = new azure.eventhub.ConsumerGroup(consumerGroupName, {
-    name: consumerGroupName,
+const consumerGroup = new eventhub.ConsumerGroup(consumerGroupName, {
     resourceGroupName: resourceGroupName,
     namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
+    eventHubName: eventHub.name,
+    consumerGroupName: consumerGroupName,
 }, { parent: eventHub });
 ```
 
-Finally, let's define two access keys: one key to send data to the Event Hub and another one to listen to messages from it:
-
-```ts
-const sendEventSourceKey = new azure.eventhub.AuthorizationRule("send", {
-    resourceGroupName: resourceGroupName,
-    namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
-    send: true,
-}, { parent: eventHub });
-
-const listenEventSourceKey = new azure.eventhub.AuthorizationRule("listen", {
-    resourceGroupName: resourceGroupName,
-    namespaceName: eventHubNamespace.name,
-    eventhubName: eventHub.name,
-    listen: true,
-}, { parent: eventHub });
-```
-
-Export the name and connection strings at the end of the file:
+Export the namespace and hub names:
 
 ```ts
 export const namespace = eventHubNamespace.name;
 export const name = eventHub.name;
-export const listenConnectionString = listenEventSourceKey.primaryConnectionString;
-export const sendConnectionString = sendEventSourceKey.primaryConnectionString;
+```
+
+Besides, let's define two access keys: one key to send data to the Event Hub and another one to listen to messages from it:
+
+```ts
+const sendEventSourceKey = new eventhub.EventHubAuthorizationRule("send", {
+    resourceGroupName: resourceGroupName,
+    namespaceName: eventHubNamespace.name,
+    eventHubName: eventHub.name,
+    authorizationRuleName: "send",
+    rights: ["send"],
+}, { parent: eventHub });
+
+const listenEventSourceKey = new eventhub.EventHubAuthorizationRule("listen", {
+    resourceGroupName: resourceGroupName,
+    namespaceName: eventHubNamespace.name,
+    eventHubName: eventHub.name,
+    authorizationRuleName: "listen",
+    rights: ["listen"],
+}, { parent: eventHub });
+```
+
+Finally, we need to invoke functions to retrieve the connection strings for each of the authorization rule:
+
+```ts
+const sendKeys = pulumi.all([resourceGroupName, eventHubNamespace.name, eventHub.name, sendEventSourceKey.name])
+    .apply(([resourceGroupName, namespaceName, eventHubName, authorizationRuleName]) =>
+        eventhub.listEventHubKeys({
+            resourceGroupName,
+            namespaceName,
+            eventHubName,
+            authorizationRuleName,
+        }));
+export const sendConnectionString = sendKeys.primaryConnectionString;
+
+const listenKeys = pulumi.all([resourceGroupName, eventHubNamespace.name, eventHub.name, listenEventSourceKey.name])
+    .apply(([resourceGroupName, namespaceName, eventHubName, authorizationRuleName]) =>
+        eventhub.listEventHubKeys({
+            resourceGroupName,
+            namespaceName,
+            eventHubName,
+            authorizationRuleName,
+        }));
+export const listenConnectionString = listenKeys.primaryConnectionString;
 ```
 
 We want to import these resources in the `index.ts` file. Also, we want to export two of them as Pulumi exports:
@@ -241,23 +292,40 @@ Create a new file `functionApp.ts` and add these import lines:
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
-import { appName, resourceGroupName } from "./common";
+import * as insights from "@pulumi/azure-nextgen/insights/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
+import * as web from "@pulumi/azure-nextgen/web/latest";
+import { appName, location, resourceGroupName } from "./common";
 import * as cosmos from "./cosmos";
 import * as eventHub from "./eventHub";
 ```
 
-Now, define two storage accounts: one account to be used by the Function App, and another one for dead-letter messages. 
+We need two storage accounts: one account to be used by the Function App, and another one for dead-letter messages. Let's add some helper code to avoid duplication:
 
 ```ts
 const storageAccountType = {
-    accountTier: "Standard",
-    accountReplicationType: "LRS",
+    resourceGroupName: resourceGroupName,
+    location: location,
+    sku: {
+        name: "Standard_LRS",
+    },
+    kind: "StorageV2",
 };
 
+function getStorageConnectionString(account: storage.StorageAccount): pulumi.Output<string> {
+    const keys = pulumi.all([resourceGroupName, account.name]).apply(([resourceGroupName, accountName]) =>
+        storage.listStorageAccountKeys({ resourceGroupName, accountName }));
+    const key = keys.keys[0].value;
+    return pulumi.interpolate`DefaultEndpointsProtocol=https;AccountName=${account.name};AccountKey=${key}`;
+}
+```
+
+Now, use them to define the storage accounts:
+
+```ts
 // Drone Telemetry storage account
-const droneTelemetryStorageAccount = new azure.storage.Account(`${appName}sa`, {
-    resourceGroupName: resourceGroupName,
+const droneTelemetryStorageAccount = new storage.StorageAccount(`${appName}sa`, {
+    accountName: `${appName}funcappsa`,
     tags: {
         displayName: "Drone Telemetry Function App Storage",
     },    
@@ -265,10 +333,10 @@ const droneTelemetryStorageAccount = new azure.storage.Account(`${appName}sa`, {
 });
 
 // Drone Telemetry DLQ storage account
-const droneTelemetryDeadLetterStorageQueueAccount = new azure.storage.Account(`${appName}dlq`, {
-    resourceGroupName: resourceGroupName,
+const droneTelemetryDeadLetterStorageQueueAccount = new storage.StorageAccount(`${appName}dlq`, {
+    accountName: `${appName}dlqsa`,
     tags: {
-        displayName: "Drone Telemetry DLQ",
+        displayName: "Drone Telemetry DLQ Storage",
     },    
     ...storageAccountType,
 });
@@ -279,53 +347,65 @@ Note a pattern of defining common property bags in a variable like `storageAccou
 Add an Azure Application Insights account to collect telemetry from our processing pipeline:
 
 ```ts
-const droneTelemetryAppInsights = new azure.appinsights.Insights(`${appName}-ai`, {
+const droneTelemetryAppInsights = new insights.Component(`${appName}-ai`, {
     resourceGroupName: resourceGroupName,
+    resourceName: `${appName}-ai`,
+    location: location,
     applicationType: "web",
+    kind: "web",
 });
 ```
 
 Define a consumption plan:
 
 ```ts
-const hostingPlan = new azure.appservice.Plan(`${appName}-asp`, {
+const hostingPlan = new web.AppServicePlan(`${appName}-asp`, {
     resourceGroupName: resourceGroupName,
-    kind: "FunctionApp",
-    sku: { tier: "Dynamic", size: "Y1" },
+    name: `${appName}-asp`,
+    location: location,
+    sku: {
+        name: "Y1",
+        tier: "Dynamic",
+    },
 });
 ```
 
 Finally, add a Function App:
 
 ```ts
-const droneTelemetryFunctionApp = new azure.appservice.FunctionApp(`${appName}-app`, {
+const droneTelemetryFunctionApp = new web.WebApp(`${appName}-app`, {
     resourceGroupName: resourceGroupName,
-    appServicePlanId: hostingPlan.id,
-    appSettings: {
-        APPINSIGHTS_INSTRUMENTATIONKEY: droneTelemetryAppInsights.instrumentationKey,
-        APPLICATIONINSIGHTS_CONNECTION_STRING: pulumi.interpolate`InstrumentationKey=${droneTelemetryAppInsights.instrumentationKey}`,
-        ApplicationInsightsAgent_EXTENSION_VERSION: "~2",
-        COSMOSDB_CONNECTION_STRING: cosmos.connectionString,
-        CosmosDBEndpoint: cosmos.endpoint,
-        CosmosDBKey: cosmos.masterKey,
-        COSMOSDB_DATABASE_NAME: cosmos.databaseName,
-        COSMOSDB_DATABASE_COL: cosmos.collectionName,
-        EventHubConnection: eventHub.listenConnectionString,
-        EventHubConsumerGroup: eventHub.consumerGroupName,
-        EventHubName: eventHub.name,
-        DeadLetterStorage: droneTelemetryDeadLetterStorageQueueAccount.primaryConnectionString,
-        WEBSITE_RUN_FROM_PACKAGE: "https://mikhailworkshop.blob.core.windows.net/zips/telemetryapp.zip",
+    name: "myappdf78s",
+    location: location,
+    serverFarmId: hostingPlan.id,
+    kind: "functionapp",
+    siteConfig: {
+        appSettings: [
+            { name: "APPINSIGHTS_INSTRUMENTATIONKEY", value: droneTelemetryAppInsights.instrumentationKey },
+            { name: "APPLICATIONINSIGHTS_CONNECTION_STRING", value: pulumi.interpolate`InstrumentationKey=${droneTelemetryAppInsights.instrumentationKey}` },
+            { name: "ApplicationInsightsAgent_EXTENSION_VERSION", value: "~2" },
+            { name: "AzureWebJobsStorage", value: getStorageConnectionString(droneTelemetryStorageAccount) },
+            { name: "COSMOSDB_CONNECTION_STRING", value: cosmos.connectionString },
+            { name: "CosmosDBEndpoint", value: cosmos.endpoint },
+            { name: "CosmosDBKey", value: cosmos.masterKey },
+            { name: "COSMOSDB_DATABASE_NAME", value: cosmos.databaseName },
+            { name: "COSMOSDB_DATABASE_COL", value: cosmos.collectionName },
+            { name: "DeadLetterStorage", value: getStorageConnectionString(droneTelemetryDeadLetterStorageQueueAccount) },
+            { name: "EventHubConnection", value: eventHub.listenConnectionString },
+            { name: "EventHubConsumerGroup", value: eventHub.consumerGroupName },
+            { name: "EventHubName", value: eventHub.name },
+            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },            
+            { name: "FUNCTIONS_WORKER_RUNTIME", value: "dotnet" },
+            { name: "WEBSITE_RUN_FROM_PACKAGE", value: "https://mikhailworkshop.blob.core.windows.net/zips/telemetryapp.zip" },
+        ]    
     },
-    storageAccountName: droneTelemetryStorageAccount.name,
-    storageAccountAccessKey: droneTelemetryStorageAccount.primaryAccessKey,
     tags: {
         displayName: "Drone Telemetry Function App",
     },
-    version: "~3",
 });
 ```
 
-The application uses a pre-built deployment package. If you have time, feel free to download the package to your computer and read or modify the code, as we learned in lab 2.
+The application uses a pre-built deployment package. If you have time, feel free to download the package to your computer and read or modify the code.
 
 Add another import to `index.ts`:
 
@@ -337,24 +417,24 @@ import "./functionApp";
 
 ## Step 5 &mdash; Deploy and Send Data
 
-Re-deploy your `telemetry` application with `pulumi up`:
+Provided your Cosmos DB is now provisioned, re-deploy your `telemetry` application with `pulumi up`:
 
 ```
 $ pulumi up
 ...
 Updating (dev):
-     Type                                       Name            Status      
-     pulumi:pulumi:Stack                        telemetry-dev               
- +   ├─ azure:storage:Account                   telemetrysa     created     
- +   ├─ azure:appinsights:Insights              telemetry-ai    created     
- +   ├─ azure:appservice:Plan                   telemetry-asp   created     
- +   ├─ azure:storage:Account                   telemetrydlq    created     
- +   ├─ azure:eventhub:EventHubNamespace        telemetry-ns    created     
- +   │  └─ azure:eventhub:EventHub              telemetry-eh    created     
- +   │     ├─ azure:eventhub:AuthorizationRule  listen          created     
- +   │     ├─ azure:eventhub:ConsumerGroup      dronetelemetry  created     
- +   │     └─ azure:eventhub:AuthorizationRule  send            created     
- +   └─ azure:appservice:FunctionApp            telemetry-app   created     
+     Type                                                              Name            Status      
+     pulumi:pulumi:Stack                                               telemetry-dev               
+ +   ├─ azure-nextgen:web/latest:AppServicePlan                        telemetry-asp   create     
+ +   ├─ azure-nextgen:eventhub/latest:Namespace                        telemetry-ns    create     
+ +   │  └─ azure-nextgen:eventhub/latest:EventHub                      telemetry-eh    create     
+ +   │     ├─ azure-nextgen:eventhub/latest:ConsumerGroup              dronetelemetry  create     
+ +   │     ├─ azure-nextgen:eventhub/latest:EventHubAuthorizationRule  send            create     
+ +   │     └─ azure-nextgen:eventhub/latest:EventHubAuthorizationRule  listen          create     
+ +   ├─ azure-nextgen:insights/latest:Component                        telemetry-ai    create     
+ +   ├─ azure-nextgen:storage/latest:StorageAccount                    telemetrydlq    create     
+ +   ├─ azure-nextgen:storage/latest:StorageAccount                    telemetrysa     create     
+ +   └─ azure-nextgen:web/latest:WebApp                                telemetry-app   create     
  
 Outputs:
   + eventHubNamespace           : "telemetry-ns24c12345"

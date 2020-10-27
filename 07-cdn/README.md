@@ -12,15 +12,21 @@ Extend the existing `website.ts` file with these resources:
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
+import * as cdn from "@pulumi/azure-nextgen/cdn/latest";
+import { appName, location, resourceGroupName } from "./common";
 
-const cdnProfile = new azure.cdn.Profile("profile", {
+const cdnProfile = new cdn.Profile("profile", {
     resourceGroupName: resourceGroupName,
-    sku: "Standard_Microsoft",
+    profileName: `${appName}-cdn`,
+    location: location,
+    sku: { name: "Standard_Microsoft" },
 });
 
-const cdnEndpoint = new azure.cdn.Endpoint("endpoint", {
+const cdnEndpoint = new cdn.Endpoint("endpoint", {
     resourceGroupName: resourceGroupName,
     profileName: cdnProfile.name,
+    endpointName: `${appName}-endpoint`,
+    location: location,
     isHttpAllowed: false,
     origins: [{ name: "origin", hostName: storageAccount.primaryWebHost }],
     originHostHeader: storageAccount.primaryWebHost,
@@ -28,6 +34,8 @@ const cdnEndpoint = new azure.cdn.Endpoint("endpoint", {
 
 export const cdnUrl = pulumi.interpolate`https://${cdnEndpoint.hostName}`;
 ```
+
+Adjust the `endpointName` property value to a globally unique string.
 
 Also, export the CDN URL from the `index.ts` file:
 
@@ -61,11 +69,11 @@ Deploy the stack
 $ pulumi up
 ...
 Updating (dev):
-     Type                              Name           Status      Info
-     pulumi:pulumi:Stack               statusapp-dev              
- +   ├─ azure:cdn:Profile              profile        created     
- +   ├─ azure:cdn:Endpoint             endpoint       created     
- ~   └─ azure:apimanagement:ApiPolicy  policy         updated     [diff: ~xmlContent]
+     Type                                             Name             Status      Info
+     pulumi:pulumi:Stack                              statusapp-dev              
+ +   ├─ azure-nextgen:cdn/latest:Profile              profile          created
+ +   ├─ azure-nextgen:cdn/latest:Endpoint             endpoint         created     
+ ~   └─ azure-nextgen:apimanagement/latest:ApiPolicy  policy           updated    [diff: ~value]
  
 Outputs:
   + cdnUrl           : "https://endpoint0962acd7.azureedge.net"

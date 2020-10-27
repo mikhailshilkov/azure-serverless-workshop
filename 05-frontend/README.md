@@ -2,9 +2,19 @@
 
 In this lab, you will extend the `statusapp` project to add an HTML frontend application that displays drone status data. You will deploy a static website to a new Storage Account, including the HTML and JavaScipt files.
 
-Make sure you are still in the `statusapp` folder with the same files that you created in Lab 4.
+## Step 1 &mdash; Install Azure Provider
 
-## Step 1 &mdash; Create a Static Web Site
+Azure NextGen provider is designed to expose the API of Azure Resource Manager (ARM). Currently, ARM does not contain operations required to setup a static website on a Storage Account: those operations belong to the data plane and storage-specific SDKs. Therefore, the Azure NextGen provider doesn't suppose them either.
+
+However, the Terraform-based "Azure" provider does support Storage Static Websites.
+
+Make sure you are still in the `statusapp` folder with the same files that you created in Lab 4. Go ahead and run the following command to install the Azure provider to the project.
+
+```bash
+npm install @pulumi/azure
+```
+
+## Step 2 &mdash; Create a Static Web Site
 
 Create a new file called `website.ts` in the same `statusapp` folder where `index.ts` exists. Add the following lines to it:
 
@@ -39,9 +49,9 @@ import * as website from "./website";
 export const storageAccountUrl = website.storageAccountUrl;
 ```
 
-> :white_check_mark: After these changes, your files should [look like this](./code/step1).
+> :white_check_mark: After these changes, your files should [look like this](./code/step2).
 
-## Step 2 &mdash; Download the Files To Local Folder
+## Step 3 &mdash; Download the Files To Local Folder
 
 Download the zip archive from https://mikhailworkshop.blob.core.windows.net/zips/droneapp-noauth.zip.
 
@@ -51,7 +61,7 @@ These files are a React-basd web application built with Webpack. That's why the 
 
 The source for this application is available [here](https://github.com/mikhailshilkov/azure-serverveless-workshop/tree/master/website/noauth).
 
-## Step 3 &mdash; Install Additional NPM Packages
+## Step 4 &mdash; Install Additional NPM Packages
 
 The next step relies of several NPM packages to be present. Run the following command to install the to the `statusapp`:
 
@@ -59,9 +69,9 @@ The next step relies of several NPM packages to be present. Run the following co
 npm install mime node-dir @types/mime @types/node-dir
 ```
 
-> :white_check_mark: After these changes, your `package.json` file should [look like this](./code/step3/package.json).
+> :white_check_mark: After these changes, your `package.json` file should [look like this](./code/step4/package.json).
 
-## Step 4 &mdash; Add a Function App
+## Step 5 &mdash; Add a Function App
 
 Create a new file called `websiteFiles.ts` in the same `statusapp` folder. Add the following lines to it:
 
@@ -112,9 +122,9 @@ Add an import line to `index.ts`:
 import "./websiteFiles";
 ```
 
-> :white_check_mark: After these changes, your files should [look like this](./code/step4).
+> :white_check_mark: After these changes, your files should [look like this](./code/step5).
 
-## Step 5 &mdash; Deploy and Test the Stack
+## Step 6 &mdash; Deploy and Test the Stack
 
 Deploy the stack
 

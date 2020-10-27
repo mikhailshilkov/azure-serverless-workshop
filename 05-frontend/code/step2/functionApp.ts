@@ -51,7 +51,7 @@ const cosmosMasterKey = telemetry.requireOutput("cosmosMasterKey");
 
 const droneStatusFunctionApp = new web.WebApp(`${appName}-app`, {
     resourceGroupName: resourceGroupName,
-    name: `${appName}-app`,
+    name: `${appName}-app123`,
     location: location,
     serverFarmId: hostingPlan.id,
     kind: "functionapp",
@@ -81,5 +81,3 @@ const droneStatusFunctionApp = new web.WebApp(`${appName}-app`, {
 });
 
 export const functionUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostName}/api/GetStatusFunction?deviceId=`;
-export const id = droneStatusFunctionApp.id;
-export const appUrl = pulumi.interpolate`https://${droneStatusFunctionApp.defaultHostName}/api`;

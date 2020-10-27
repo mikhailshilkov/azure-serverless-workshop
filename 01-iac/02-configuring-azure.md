@@ -2,38 +2,27 @@
 
 Now that you have a basic project, let's configure Azure support for it.
 
-## Step 1 &mdash; Install the Azure Package
+## Step 1 &mdash; Install the Azure NextGen Package
 
-Run the following command to install the Azure package:
+Run the following command to install the Azure NextGen package:
 
 ```bash
-npm install @pulumi/azure
+npm install @pulumi/azure-nextgen
 ```
 
 The package will be added to `node_modules/`, `package.json`, and `package-lock.json`.
 
-## Step 2 &mdash; Use the Azure Package
+## Step 2 &mdash; Use the Azure NextGen Package
 
-Now that the Azure package is installed, add the following line to `index.ts` to import it:
+Now that the Azure NextGen package is installed, add the following lines to `index.ts` to import two modules from it. We will use one module to define a resource group and another one to define a storage account.
 
 ```ts
 ...
-import * as azure from "@pulumi/azure";
+import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as storage from "@pulumi/azure-nextgen/storage/latest";
 ```
 
-## Step 3 &mdash; Configure an Azure Region
-
-Configure the Azure region you would like to deploy to:
-
-```bash
-pulumi config set azure:location westeurope
-```
-
-Feel free to choose any Azure region that supports the services used in these labs ([see this infographic](https://azure.microsoft.com/en-us/global-infrastructure/regions/) for a list of available regions).
-
-The command persists the value to the local `Pulumi.dev.yaml` file. You can view or edit this file at any time to effect the configuration of the current stack.
-
-## Step 4 &mdash; Login to Azure
+## Step 3 &mdash; Login to Azure
 
 Simply login to the Azure CLI and Pulumi will automatically use your credentials:
 

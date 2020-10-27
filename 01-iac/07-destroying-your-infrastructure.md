@@ -16,13 +16,13 @@ This will show you a preview, much like the `pulumi up` command does:
 Previewing destroy (prod):
 
      Type                         Name               Plan
- -   pulumi:pulumi:Stack          iac-workshop-prod  delete
- -   ├─ azure:storage:Container   mycontainer        delete     
- -   ├─ azure:storage:Account     mystorage          delete     
- -   └─ azure:core:ResourceGroup  my-group           delete 
+ -   pulumi:pulumi:Stack                              iac-workshop-prod  delete     
+ -   ├─ azure-nextgen:storage/latest:BlobContainer    mycontainer        delete     
+ -   ├─ azure-nextgen:storage/latest:StorageAccount   mystorage          delete     
+ -   └─ azure-nextgen:resources/latest:ResourceGroup  my-group           delete
 
 Outputs:
-  - AccountName: "mystorage4a3f2830"
+  - AccountName: "myuniquename"
 
 Resources:
     - 4 to delete
@@ -38,14 +38,14 @@ To proceed, select `yes`.
 ```
 Destroying (prod):
 
-     Type                         Name               Status
- -   pulumi:pulumi:Stack          iac-workshop-prod  deleted
- -   ├─ azure:storage:Container   mycontainer        deleted     
- -   ├─ azure:storage:Account     mystorage          deleted     
- -   └─ azure:core:ResourceGroup  my-group           deleted 
+     Type                                             Name               Status
+ -   pulumi:pulumi:Stack                              iac-workshop-prod  deleted
+ -   ├─ azure-nextgen:storage/latest:BlobContainer    mycontainer        deleted     
+ -   ├─ azure-nextgen:storage/latest:StorageAccount   mystorage          deleted     
+ -   └─ azure-nextgen:resources/latest:ResourceGroup  my-group           deleted
 
 Outputs:
-  - AccountName: "mystorage4a3f2830"
+  - AccountName: "myuniquename"
 
 Resources:
     - 4 deleted

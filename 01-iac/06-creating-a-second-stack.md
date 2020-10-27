@@ -10,10 +10,9 @@ Create a new stack:
 pulumi stack init prod
 ```
 
-Next, configure its two required variables:
+Next, configure its required variable:
 
 ```bash
-pulumi config set azure:location westeurope
 pulumi config set container htmlprod
 ```
 
@@ -31,6 +30,8 @@ dev    30 minutes ago  4               https://app.pulumi.com/myuser/iac-worksho
 prod*  3 minutes ago   0               https://app.pulumi.com/myuser/iac-workshop/prod
 ```
 
+Adjust the code to change the names of the resource group and the storage account to avoid duplication. Alternatively, you could make these names include stack names or make them configurable.
+
 ## Step 2 &mdash; Deploy the New Stack
 
 Now deploy all of the changes:
@@ -44,14 +45,14 @@ This will create an entirely new set of resources from scratch, unrelated to the
 ```
 Updating (prod):
 
-     Type                         Name               Status
- +   pulumi:pulumi:Stack          iac-workshop-prod  created
- +   ├─ azure:core:ResourceGroup  my-group           created     
- +   ├─ azure:storage:Account     mystorage          created     
- +   └─ azure:storage:Container   mycontainer        created 
+     Type                                             Name               Status
+ +   pulumi:pulumi:Stack                              iac-workshop-prod  created
+ +   ├─ azure-nextgen:resources/latest:ResourceGroup  my-group           created     
+ +   ├─ azure-nextgen:storage/latest:StorageAccount   mystorage          created     
+ +   └─ azure-nextgen:storage/latest:BlobContainer    mycontainer        created
 
 Outputs:
-    AccountName: "mystorage4a3f2830"
+    AccountName: "myuniquenameprod"
 
 Resources:
     + 4 created
