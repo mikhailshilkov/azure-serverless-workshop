@@ -17,7 +17,7 @@ Remove all the code from `index.ts`.
 Create a new file called `common.ts` in the same `statusapp` folder where `index.ts` exists. Add the following lines to it:
 
 ```ts
-import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as resources from "@pulumi/azure-native/resources/latest";
 
 export const appName = "status";
 
@@ -44,9 +44,9 @@ import "./common";
 These resources are very familiar to you by now. Create a `functionApp.ts` file with the following lines:
 
 ```ts
-import * as insights from "@pulumi/azure-nextgen/insights/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as insights from "@pulumi/azure-native/insights/latest";
+import * as storage from "@pulumi/azure-native/storage/latest";
+import * as web from "@pulumi/azure-native/web/latest";
 import { appName, location, resourceGroupName } from "./common";
 
 const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
@@ -59,7 +59,7 @@ const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
     kind: "StorageV2",
     tags: {
         displayName: "Drone Status Function App",
-    },    
+    },
 });
 
 const droneStatusAppInsights = new insights.Component(`${appName}-ai`, {
@@ -122,7 +122,7 @@ const droneStatusFunctionApp = new web.WebApp(`${appName}-app`, {
             { name: "CosmosDBKey", value: cosmosMasterKey },
             { name: "COSMOSDB_DATABASE_NAME", value: cosmosDatabaseName },
             { name: "COSMOSDB_DATABASE_COL", value: cosmosCollectionName },
-            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },            
+            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
             { name: "FUNCTIONS_WORKER_RUNTIME", value: "dotnet" },
             { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "10.14.1" },
             { name: "WEBSITE_RUN_FROM_PACKAGE", value: "https://mikhailworkshop.blob.core.windows.net/zips/statusapp.zip" },
@@ -164,14 +164,14 @@ Deploy the stack
 $ pulumi up
 ...
 Updating (dev):
-     Type                                             Name           Status      
-     pulumi:pulumi:Stack                              statusapp-dev              
- +   ├─ azure-nextgen:resources/latest:ResourceGroup  status-rg      created     
- +   ├─ azure-nextgen:insights/latest:Component       status-ai      created     
- +   ├─ azure-nextgen:web/latest:AppServicePlan       status-asp     created     
- +   ├─ azure-nextgen:storage/latest:StorageAccount   statussa       created     
- +   └─ azure-nextgen:web/latest:WebApp               status-app     created   
- 
+     Type                                             Name           Status
+     pulumi:pulumi:Stack                              statusapp-dev
+ +   ├─ azure-native:resources/latest:ResourceGroup  status-rg      created
+ +   ├─ azure-native:insights/latest:Component       status-ai      created
+ +   ├─ azure-native:web/latest:AppServicePlan       status-asp     created
+ +   ├─ azure-native:storage/latest:StorageAccount   statussa       created
+ +   └─ azure-native:web/latest:WebApp               status-app     created
+
 Outputs:
     functionUrl: "https://status-app47012f49.azurewebsites.net/api/GetStatusFunction?deviceId="
 
@@ -182,7 +182,7 @@ Resources:
 Run the following command to retrieve the status of a device:
 
 ```
-# curl "$(pulumi stack output functionUrl)drone-543"          
+# curl "$(pulumi stack output functionUrl)drone-543"
 {"id":"drone-543","_rid":"NaUDAJvRtdQBAAAAAAAAAA==","_self":"dbs/NaUDAA==/colls/NaUDAJvRtdQ=/docs/NaUDAJvRtdQBAAAAAAAAAA==/","_ts":1597094407,"_etag":"\"9100dc32-0000-0700-0000-5f31ba070000\"","Battery":1,"FlightMode":5,"Latitude":47.476075,"Longitude":-122.192026,"Altitude":0,"GyrometerOK":true,"AccelerometerOK":true,"MagnetometerOK":true}%
 ```
 

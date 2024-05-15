@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as apimanagement from "@pulumi/azure-nextgen/apimanagement/latest";
+import * as apimanagement from "@pulumi/azure-native/apimanagement/latest";
 import * as azure from "@pulumi/azure";
 import { appName, location, resourceGroupName } from "./common";
 import * as functionApp from "./functionApp";
@@ -111,7 +111,7 @@ const product = new apimanagement.Product("dronedeliveryprodapi", {
     displayName: "drone delivery product api",
     description: "drone delivery product api",
     terms: "terms for example product",
-    subscriptionRequired: false,    
+    subscriptionRequired: false,
     state: "published",
 });
 

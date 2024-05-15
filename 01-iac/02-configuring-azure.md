@@ -2,24 +2,24 @@
 
 Now that you have a basic project, let's configure Azure support for it.
 
-## Step 1 &mdash; Install the Azure NextGen Package
+## Step 1 &mdash; Install the Azure Native Package
 
-Run the following command to install the Azure NextGen package:
+Run the following command to install the Azure Native package:
 
 ```bash
-npm install @pulumi/azure-nextgen
+npm install @pulumi/azure-native
 ```
 
 The package will be added to `node_modules/`, `package.json`, and `package-lock.json`.
 
-## Step 2 &mdash; Use the Azure NextGen Package
+## Step 2 &mdash; Use the Azure Native Package
 
-Now that the Azure NextGen package is installed, add the following lines to `index.ts` to import two modules from it. We will use one module to define a resource group and another one to define a storage account.
+Now that the Azure Native package is installed, add the following lines to `index.ts` to import two modules from it. We will use one module to define a resource group and another one to define a storage account.
 
 ```ts
 ...
-import * as resources from "@pulumi/azure-nextgen/resources/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
+import * as resources from "@pulumi/azure-native/resources";
+import * as storage from "@pulumi/azure-native/storage";
 ```
 
 ## Step 3 &mdash; Login to Azure

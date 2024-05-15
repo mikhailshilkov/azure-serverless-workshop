@@ -35,7 +35,7 @@ Previewing update (dev):
 
      Type                                             Name              Plan
  +   pulumi:pulumi:Stack                              iac-workshop-dev  create
- +   └─ azure-nextgen:resources/latest:ResourceGroup  my-group          create
+ +   └─ azure-native:resources:ResourceGroup  my-group          create
 
 Resources:
     + 2 to create
@@ -51,9 +51,9 @@ This is a summary view. Select `details` to view the full set of properties:
 ```
 + pulumi:pulumi:Stack: (create)
     [urn=urn:pulumi:dev::iac-workshop::pulumi:pulumi:Stack::iac-workshop-dev]
-    + azure-nextgen:resources/latest:ResourceGroup: (create)
-        [urn=urn:pulumi:dev::iac-workshop::azure-nextgen:resources/latest:ResourceGroup::my-group]
-        [provider=urn:pulumi:dev::iac-workshop::pulumi:providers:azure-nextgen::default_0_2_3::04da6b54-80e4-46f7-96ec-b56ff0331ba9]
+    + azure-native:resources:ResourceGroup: (create)
+        [urn=urn:pulumi:dev::iac-workshop::azure-native:resources:ResourceGroup::my-group]
+        [provider=urn:pulumi:dev::iac-workshop::pulumi:providers:azure-native::default_2_40_0::04da6b54-80e4-46f7-96ec-b56ff0331ba9]
         location         : "westus"
         resourceGroupName: "my-group"
 
@@ -74,7 +74,7 @@ Updating (dev):
 
      Type                                             Name              Status
  +   pulumi:pulumi:Stack                              iac-workshop-dev  created
- +   └─ azure-nextgen:resources/latest:ResourceGroup  my-group          created
+ +   └─ azure-native:resources:ResourceGroup  my-group          created
 
 Resources:
     + 2 created

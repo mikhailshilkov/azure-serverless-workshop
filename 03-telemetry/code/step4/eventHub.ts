@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as eventhub from "@pulumi/azure-nextgen/eventhub/latest";
+import * as eventhub from "@pulumi/azure-native/eventhub/latest";
 import { appName, location, resourceGroupName } from "./common";
 
 const eventHubNamespace = new eventhub.Namespace(`${appName}-ns`, {

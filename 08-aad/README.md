@@ -27,10 +27,10 @@ const apiApp = new azuread.Application(apiAppName, {
     oauth2AllowImplicitFlow: true,
     replyUrls: [storageAccountUrl, cdnUrl],
     identifierUris: [`http://${apiAppName}`],
-    appRoles: [{  
-        allowedMemberTypes: [ "User" ], 
-        description:"Access to device status", 
-        displayName:"Get Device Status", 
+    appRoles: [{
+        allowedMemberTypes: [ "User" ],
+        description:"Access to device status",
+        displayName:"Get Device Status",
         isEnabled:true,
         value: "GetStatus",
     }],
@@ -64,7 +64,7 @@ Also, change the `asset` calculation block to populate the tenant ID, client ID,
 
 ```ts
     const asset = pulumi.all([api.apiUrl, website.tenantId, website.applicationId])
-        .apply(([url, tenant, app]) => 
+        .apply(([url, tenant, app]) =>
             rawText.replace("[API_URL]", url)
                 .replace("[TENANT_ID]", tenant)
                 .replace("[APP_ID]", app)

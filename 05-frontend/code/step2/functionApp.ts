@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as insights from "@pulumi/azure-nextgen/insights/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as insights from "@pulumi/azure-native/insights/latest";
+import * as storage from "@pulumi/azure-native/storage/latest";
+import * as web from "@pulumi/azure-native/web/latest";
 import { appName, location, resourceGroupName } from "./common";
 
 const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
@@ -14,7 +14,7 @@ const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
     kind: "StorageV2",
     tags: {
         displayName: "Drone Status Function App",
-    },    
+    },
 });
 
 function getStorageConnectionString(account: storage.StorageAccount): pulumi.Output<string> {
@@ -66,7 +66,7 @@ const droneStatusFunctionApp = new web.WebApp(`${appName}-app`, {
             { name: "CosmosDBKey", value: cosmosMasterKey },
             { name: "COSMOSDB_DATABASE_NAME", value: cosmosDatabaseName },
             { name: "COSMOSDB_DATABASE_COL", value: cosmosCollectionName },
-            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },            
+            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
             { name: "FUNCTIONS_WORKER_RUNTIME", value: "dotnet" },
             { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "10.14.1" },
             { name: "WEBSITE_RUN_FROM_PACKAGE", value: "https://mikhailworkshop.blob.core.windows.net/zips/statusapp.zip" },

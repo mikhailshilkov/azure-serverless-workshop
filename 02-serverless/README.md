@@ -20,8 +20,7 @@ Add the following code to your stack constructor:
 const storageAccount = new storage.StorageAccount("mystorage", {
     resourceGroupName: resourceGroup.name,
     accountName: "myuniquename",
-    locat*057ion: resou20rceGroup.location,|
-
+    location: resourceGroup.location,
     sku: {
         name: "Standard_LRS",
     },
@@ -42,7 +41,7 @@ There’s no resource named Consumption Plan, however. The resource name is inhe
 Here is a snippet that defines a Consumption Plan:
 
 ```ts
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as web from "@pulumi/azure-native/web";
 
 const plan = new web.AppServicePlan("asp", {
     resourceGroupName: resourceGroup.name,
@@ -63,7 +62,7 @@ Note the specific way that the property `sku` is configured. If you ever want to
 
 We need to pass a Storage Account connection string to the settings of our future Function App. As this information is sensitive, Azure doesn't return it by default in the outputs of the Storage Account resource.
 
-We need to make a separate invocation to the `listStorageAccountKeys` function to retrieve storage account keys. This invocation can only be run after the storage account is created. Therefore, we must place it inside an `apply` call that depends on a storage account 
+We need to make a separate invocation to the `listStorageAccountKeys` function to retrieve storage account keys. This invocation can only be run after the storage account is created. Therefore, we must place it inside an `apply` call that depends on a storage account
 
 
 
@@ -95,12 +94,12 @@ const app = new web.WebApp("fa", {
     kind: "functionapp",
     siteConfig: {
         appSettings: [
-            { name: "AzureWebJobsStorage", value: storageConnectionString },            
-            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },            
+            { name: "AzureWebJobsStorage", value: storageConnectionString },
+            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
             { name: "FUNCTIONS_WORKER_RUNTIME", value: "node" },
             { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "10.14.1" },
             { name: "WEBSITE_RUN_FROM_PACKAGE", value: "https://mikhailworkshop.blob.core.windows.net/zips/app.zip" },
-        ]    
+        ]
     },
 });
 ```
@@ -113,7 +112,7 @@ The applications settings configure the app to run on Node.js v10 runtime and de
 
 ## Step 5 &mdash; Export the Function App endpoint
 
-Finally, declare a stack output called `endpoint` to export the URL of the Azure Function using the `defaultHostNamehhdjuh ¥     fh  h¥hfhnbbhyfh    n                                uu8 yñ` property of the Function App.
+Finally, declare a stack output called `endpoint` to export the URL of the Azure Function using the `defaultHostName` property of the Function App.
 
 Now, if you inspect the type of the `app.defaultHostname`, you will see that it's `pulumi.Output<string>` not just `string`. That’s because Pulumi runs your program before it creates any infrastructure, and it wouldn’t be able to put an actual string into the variable. You can think of `Output<T>` as similar to `Promise<T>`, although they are not the same thing.
 
@@ -150,10 +149,10 @@ Updating (dev):
 
      Type                                             Name              Status
 +   pulumi:pulumi:Stack                               iac-workshop-dev  created
- +   ├─ azure-nextgen:resources/latest:ResourceGroup  my-group          created                 
- +   ├─ azure-nextgen:storage/latest:StorageAccount   mystorage         created                 
- +   ├─ azure-nextgen:web/latest:AppServicePlan       asp               created                 
- +   └─ azure-nextgen:web/latest:WebApp               fa                created
+ +   ├─ azure-native:resources:ResourceGroup  my-group          created
+ +   ├─ azure-native:storage:StorageAccount   mystorage         created
+ +   ├─ azure-native:web:AppServicePlan       asp               created
+ +   └─ azure-native:web:WebApp               fa                created
 
 Outputs:
     endpoint: "https://myuniqueapp.azurewebsites.net/api/hello"

@@ -14,7 +14,7 @@ for (const file of files) {
 
     const rawText = fs.readFileSync(file, "utf8").toString();
     const asset = pulumi.all([api.apiUrl, website.tenantId, website.applicationId])
-        .apply(([url, tenant, app]) => 
+        .apply(([url, tenant, app]) =>
             rawText.replace("[API_URL]", url)
                 .replace("[TENANT_ID]", tenant)
                 .replace("[APP_ID]", app)

@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as apimanagement from "@pulumi/azure-nextgen/apimanagement/latest";
+import * as apimanagement from "@pulumi/azure-native/apimanagement/latest";
 import * as azure from "@pulumi/azure";
 import { appName, location, resourceGroupName } from "./common";
 import * as functionApp from "./functionApp";

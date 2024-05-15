@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as resources from "@pulumi/azure-nextgen/resources/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as resources from "@pulumi/azure-native/resources";
+import * as storage from "@pulumi/azure-native/storage";
+import * as web from "@pulumi/azure-native/web";
 
 const resourceGroup = new resources.ResourceGroup("my-group", {
     resourceGroupName: "my-group",

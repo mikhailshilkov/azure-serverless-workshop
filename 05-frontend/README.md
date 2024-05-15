@@ -4,7 +4,7 @@ In this lab, you will extend the `statusapp` project to add an HTML frontend app
 
 ## Step 1 &mdash; Install Azure Provider
 
-Azure NextGen provider is designed to expose the API of Azure Resource Manager (ARM). Currently, ARM does not contain operations required to setup a static website on a Storage Account: those operations belong to the data plane and storage-specific SDKs. Therefore, the Azure NextGen provider doesn't suppose them either.
+Azure Native provider is designed to expose the API of Azure Resource Manager (ARM). Currently, ARM does not contain operations required to setup a static website on a Storage Account: those operations belong to the data plane and storage-specific SDKs. Therefore, the Azure Native provider doesn't suppose them either.
 
 However, the Terraform-based "Azure" provider does support Storage Static Websites.
 
@@ -26,7 +26,7 @@ export const storageAccount = new azure.storage.Account(`${appName}fe`, {
     resourceGroupName: resourceGroupName,
     tags: {
         displayName: "Drone Front End Storage Account",
-    },    
+    },
     accountTier: "Standard",
     accountReplicationType: "LRS",
     staticWebsite: {
@@ -132,12 +132,12 @@ Deploy the stack
 $ pulumi up
 ...
 Updating (dev):
-     Type                             Name           Status      
- +   pulumi:pulumi:Stack              statusapp-dev  created     
- +   └─ azure:storage:Account         statusfe       created     
- +      ├─ azure:storage:Blob         chunk-map.json created    
-...    
- 
+     Type                             Name           Status
+ +   pulumi:pulumi:Stack              statusapp-dev  created
+ +   └─ azure:storage:Account         statusfe       created
+ +      ├─ azure:storage:Blob         chunk-map.json created
+...
+
 Outputs:
   + storageAccountUrl: "https://statusfe1267cccd.z6.web.core.windows.net/"
 

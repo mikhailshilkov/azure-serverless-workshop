@@ -1,6 +1,6 @@
-import * as insights from "@pulumi/azure-nextgen/insights/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as insights from "@pulumi/azure-native/insights/latest";
+import * as storage from "@pulumi/azure-native/storage/latest";
+import * as web from "@pulumi/azure-native/web/latest";
 import { appName, location, resourceGroupName } from "./common";
 
 const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
@@ -13,7 +13,7 @@ const droneStatusStorageAccount = new storage.StorageAccount(`${appName}sa`, {
     kind: "StorageV2",
     tags: {
         displayName: "Drone Status Function App",
-    },    
+    },
 });
 
 const droneStatusAppInsights = new insights.Component(`${appName}-ai`, {

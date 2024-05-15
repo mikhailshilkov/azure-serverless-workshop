@@ -36,7 +36,7 @@ Updating (dev):
 
      Type                                            Name              Status
      pulumi:pulumi:Stack                             iac-workshop-dev
- +   └─ azure-nextgen:storage/latest:StorageAccount  mystorage         created
+ +   └─ azure-native:storage:StorageAccount  mystorage         created
 
 Resources:
     + 1 created
@@ -119,7 +119,7 @@ Updating (dev):
 
      Type                                           Name              Status
      pulumi:pulumi:Stack                            iac-workshop-dev
- +   └─ azure-nextgen:storage/latest:BlobContainer  mycontainer       created
+ +   └─ azure-native:storage:BlobContainer  mycontainer       created
 
 Resources:
     + 1 created
@@ -128,6 +128,7 @@ Resources:
 Duration: 9s
 
 Permalink: https://app.pulumi.com/myuser/iac-workshop/dev/updates/4
+```
 
 Finally, relist the contents of your account:
 

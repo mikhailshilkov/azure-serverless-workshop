@@ -1,4 +1,4 @@
-import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as resources from "@pulumi/azure-native/resources/latest";
 
 export const appName = "telemetry";
 

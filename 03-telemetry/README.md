@@ -7,7 +7,7 @@ Create a new Pulumi project called `telemetry` from your root workshop folder:
 ```bash
 mkdir telemetry
 cd telemetry
-pulumi new azure-nextgen-typescript -y
+pulumi new azure-native-typescript -y
 ```
 
 Remove all the code from `index.ts`: this time, we'll structure the program differently. In this lab, you need to create resources in three functional areas: Cosmos DB, Event Hubs, and Function Apps. Let's split these resources into five TypeScript files:
@@ -23,7 +23,7 @@ Remove all the code from `index.ts`: this time, we'll structure the program diff
 Create a new file called `common.ts` in the same `telemetry` folder where `index.ts` exists. Add the following lines to it:
 
 ```ts
-import * as resources from "@pulumi/azure-nextgen/resources/latest";
+import * as resources from "@pulumi/azure-native/resources/latest";
 
 export const appName = "telemetry";
 
@@ -58,7 +58,7 @@ Create a new file `cosmos.ts`. Use the following import statements to load Pulum
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
-import * as documentdb from "@pulumi/azure-nextgen/documentdb/latest";
+import * as documentdb from "@pulumi/azure-native/documentdb/latest";
 import { appName, location, resourceGroupName } from "./common";
 ```
 
@@ -86,7 +86,7 @@ Add a database to this account:
 
 ```ts
 export const databaseName = "db";
-const database = new documentdb.SqlResourceSqlDatabase(databaseName, {    
+const database = new documentdb.SqlResourceSqlDatabase(databaseName, {
     databaseName: databaseName,
     resourceGroupName: resourceGroupName,
     accountName: databaseAccount.name,
@@ -156,13 +156,13 @@ Note: it takes 10-15 minutes to provision a new Cosmos DB account. Go ahead and 
 $ pulumi up
 ...
 Updating (dev):
-     Type                                                              Name           Plan       
- +   pulumi:pulumi:Stack                                               telemetry-dev  created    
- +   ├─ azure-nextgen:resources/latest:ResourceGroup                   telemetry-rg   created    
- +   └─ azure-nextgen:documentdb/latest:DatabaseAccount                telemetry-acc  created    
- +      └─ azure-nextgen:documentdb/latest:SqlResourceSqlDatabase      db             created    
- +         └─ azure-nextgen:documentdb/latest:SqlResourceSqlContainer  items          created    
- 
+     Type                                                              Name           Plan
+ +   pulumi:pulumi:Stack                                               telemetry-dev  created
+ +   ├─ azure-native:resources/latest:ResourceGroup                   telemetry-rg   created
+ +   └─ azure-native:documentdb/latest:DatabaseAccount                telemetry-acc  created
+ +      └─ azure-native:documentdb/latest:SqlResourceSqlDatabase      db             created
+ +         └─ azure-native:documentdb/latest:SqlResourceSqlContainer  items          created
+
 Resources:
     + 5 created
 
@@ -179,7 +179,7 @@ Create a new file `eventHub.ts` and initialize its imports:
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
-import * as eventhub from "@pulumi/azure-nextgen/eventhub/latest";
+import * as eventhub from "@pulumi/azure-native/eventhub/latest";
 import { appName, location, resourceGroupName } from "./common";
 ```
 
@@ -292,9 +292,9 @@ Create a new file `functionApp.ts` and add these import lines:
 
 ```ts
 import * as pulumi from "@pulumi/pulumi";
-import * as insights from "@pulumi/azure-nextgen/insights/latest";
-import * as storage from "@pulumi/azure-nextgen/storage/latest";
-import * as web from "@pulumi/azure-nextgen/web/latest";
+import * as insights from "@pulumi/azure-native/insights/latest";
+import * as storage from "@pulumi/azure-native/storage/latest";
+import * as web from "@pulumi/azure-native/web/latest";
 import { appName, location, resourceGroupName } from "./common";
 import * as cosmos from "./cosmos";
 import * as eventHub from "./eventHub";
@@ -328,7 +328,7 @@ const droneTelemetryStorageAccount = new storage.StorageAccount(`${appName}sa`, 
     accountName: `${appName}funcappsa`,
     tags: {
         displayName: "Drone Telemetry Function App Storage",
-    },    
+    },
     ...storageAccountType,
 });
 
@@ -337,7 +337,7 @@ const droneTelemetryDeadLetterStorageQueueAccount = new storage.StorageAccount(`
     accountName: `${appName}dlqsa`,
     tags: {
         displayName: "Drone Telemetry DLQ Storage",
-    },    
+    },
     ...storageAccountType,
 });
 ```
@@ -394,10 +394,10 @@ const droneTelemetryFunctionApp = new web.WebApp(`${appName}-app`, {
             { name: "EventHubConnection", value: eventHub.listenConnectionString },
             { name: "EventHubConsumerGroup", value: eventHub.consumerGroupName },
             { name: "EventHubName", value: eventHub.name },
-            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },            
+            { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
             { name: "FUNCTIONS_WORKER_RUNTIME", value: "dotnet" },
             { name: "WEBSITE_RUN_FROM_PACKAGE", value: "https://mikhailworkshop.blob.core.windows.net/zips/telemetryapp.zip" },
-        ]    
+        ]
     },
     tags: {
         displayName: "Drone Telemetry Function App",
@@ -423,19 +423,19 @@ Provided your Cosmos DB is now provisioned, re-deploy your `telemetry` applicati
 $ pulumi up
 ...
 Updating (dev):
-     Type                                                              Name            Status      
-     pulumi:pulumi:Stack                                               telemetry-dev               
- +   ├─ azure-nextgen:web/latest:AppServicePlan                        telemetry-asp   create     
- +   ├─ azure-nextgen:eventhub/latest:Namespace                        telemetry-ns    create     
- +   │  └─ azure-nextgen:eventhub/latest:EventHub                      telemetry-eh    create     
- +   │     ├─ azure-nextgen:eventhub/latest:ConsumerGroup              dronetelemetry  create     
- +   │     ├─ azure-nextgen:eventhub/latest:EventHubAuthorizationRule  send            create     
- +   │     └─ azure-nextgen:eventhub/latest:EventHubAuthorizationRule  listen          create     
- +   ├─ azure-nextgen:insights/latest:Component                        telemetry-ai    create     
- +   ├─ azure-nextgen:storage/latest:StorageAccount                    telemetrydlq    create     
- +   ├─ azure-nextgen:storage/latest:StorageAccount                    telemetrysa     create     
- +   └─ azure-nextgen:web/latest:WebApp                                telemetry-app   create     
- 
+     Type                                                              Name            Status
+     pulumi:pulumi:Stack                                               telemetry-dev
+ +   ├─ azure-native:web/latest:AppServicePlan                        telemetry-asp   create
+ +   ├─ azure-native:eventhub/latest:Namespace                        telemetry-ns    create
+ +   │  └─ azure-native:eventhub/latest:EventHub                      telemetry-eh    create
+ +   │     ├─ azure-native:eventhub/latest:ConsumerGroup              dronetelemetry  create
+ +   │     ├─ azure-native:eventhub/latest:EventHubAuthorizationRule  send            create
+ +   │     └─ azure-native:eventhub/latest:EventHubAuthorizationRule  listen          create
+ +   ├─ azure-native:insights/latest:Component                        telemetry-ai    create
+ +   ├─ azure-native:storage/latest:StorageAccount                    telemetrydlq    create
+ +   ├─ azure-native:storage/latest:StorageAccount                    telemetrysa     create
+ +   └─ azure-native:web/latest:WebApp                                telemetry-app   create
+
 Outputs:
   + eventHubNamespace           : "telemetry-ns24c12345"
   + eventHubSendConnectionString: "Endpoint=sb://telemetry-ns24c12345.servicebus.windows.net/;SharedAccessKeyName=senda456760b;SharedAccessKey=somelongsecretkey=;EntityPath=telemetry-eh4563e58c"
@@ -450,7 +450,7 @@ While the stack is deploying, download a sample application that can send teleme
 5. Run the client application:
 
 ```
-export EH_NAMESPACE=$(pulumi stack output eventHubNamespace) 
+export EH_NAMESPACE=$(pulumi stack output eventHubNamespace)
 export EVENT_HUB_CONNECTION_STRING="$(pulumi stack output eventHubSendConnectionString)"
 dotnet TelemetryGenerator/Serverless.Simulator.dll
 ```
@@ -468,7 +468,7 @@ Created 2 records for drone-271
 ...
 ```
 
-Stop the program at any moment with `Ctrl-C`. 
+Stop the program at any moment with `Ctrl-C`.
 
 Go ahead and explore Event Hubs, Application Insights, Cosmos DB in the Azure Portal. You should be able to see:
 
